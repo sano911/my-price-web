@@ -1,43 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Price Hunter</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-        h2 { color: #1a73e8; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s; }
-        button:hover { background-color: #218838; }
-        .results { margin-top: 25px; text-align: left; background: #f8f9fa; padding: 15px; border-radius: 8px; }
-        .price-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
-        .price-row:last-child { border-bottom: none; }
-        .store-name { font-weight: bold; color: #555; }
-        .price-value { color: #d9534f; font-weight: bold; }
-    </style>
+    <title>Smart Price Finder</title>
 </head>
-<body>
-    <div class="container">
-        <h2>Price Hunter 🔍</h2>
-        <form method="POST">
-            <input type="text" name="product" placeholder="Product Name (e.g. iPhone 15)" required>
-            <button type="submit">Check Prices</button>
-        </form>
+<body style="font-family: Arial; text-align:center; padding:40px;">
 
-        {% if amazon or flipkart %}
-        <div class="results">
-            <div class="price-row">
-                <span class="store-name">Amazon:</span>
-                <span class="price-value">{{ amazon }}</span>
-            </div>
-            <div class="price-row">
-                <span class="store-name">Flipkart:</span>
-                <span class="price-value">{{ flipkart }}</span>
-            </div>
-        </div>
-        {% endif %}
-    </div>
+    <h2>Smart Price Finder 🔍</h2>
+
+    <form method="POST">
+        <input type="text" name="product" placeholder="Enter product name" required>
+        <button type="submit">Search</button>
+    </form>
+
+    {% if amazon_link %}
+        <h3>Results for: {{ product }}</h3>
+        <a href="{{ amazon_link }}" target="_blank">
+            Buy on Amazon
+        </a>
+    {% endif %}
+
 </body>
 </html>
