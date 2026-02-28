@@ -1,15 +1,18 @@
 import requests
 from bs4 import BeautifulSoup
 from flask import Flask, render_template, request
+import os
 
 app = Flask(__name__)
 
 def get_amazon_price(name):
     try:
-        # Headers taaki Amazon ko lage ki ye asli browser hai
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"}
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+            "Accept-Language": "en-US,en;q=0.5"
+        }
         url = f"https://www.amazon.in/s?k={name}"
-        res = requests.get(url, headers=headers)
+        res = requests.get(url, headers=headers, timeout=10)
         soup = BeautifulSoup(res.text, 'html.parser')
         price = soup.find("span", {"class": "a-price-whole"}).text
         return f"₹{price}"
@@ -18,10 +21,10 @@ def get_amazon_price(name):
 
 def get_flipkart_price(name):
     try:
+        headers = {"User-Agent": "Mozilla/5.0"}
         url = f"https://www.flipkart.com/search?q={name}"
-        res = requests.get(url)
+        res = requests.get(url, headers=headers, timeout=10)
         soup = BeautifulSoup(res.text, 'html.parser')
-        # Flipkart price selector
         price = soup.find("div", {"class": "_30jeq3"}).text
         return price
     except:
@@ -38,4 +41,6 @@ def index():
     return render_template('index.html', amazon=amazon_price, flipkart=flipkart_price)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Render ke liye sahi port setting
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
