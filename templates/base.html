@@ -1,40 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Smart Price Finder</title>
-<script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart Price Finder{% endblock %}</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom Professional CSS -->
+    {% if request.path %} <!-- Django syntax -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    {% endif %}
+    <!-- Flask syntax (if using Flask, use this instead) -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> -->
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 font-sans">
 
-<nav class="bg-blue-600 p-4 text-white flex justify-between">
-<span class="font-bold">Smart Price Finder</span>
-<div>
-<a href="/" class="mr-3">Home</a>
+<!-- Navbar -->
+<nav class="bg-blue-600 p-4 text-white flex justify-between shadow-md">
+    <span class="font-bold text-xl">Smart Price Finder</span>
+    <div>
+        <a href="/" class="mr-3 hover:text-gray-200">Home</a>
 
-{% if current_user.is_authenticated %}
-<a href="/dashboard" class="mr-3">Dashboard</a>
-<a href="/logout">Logout</a>
-{% else %}
-<a href="/login" class="mr-3">Login</a>
-<a href="/register">Register</a>
-{% endif %}
-
-</div>
+        {% if current_user.is_authenticated %}
+        <a href="/dashboard" class="mr-3 hover:text-gray-200">Dashboard</a>
+        <a href="/logout" class="hover:text-gray-200">Logout</a>
+        {% else %}
+        <a href="/login" class="mr-3 hover:text-gray-200">Login</a>
+        <a href="/register" class="hover:text-gray-200">Register</a>
+        {% endif %}
+    </div>
 </nav>
 
-<div class="max-w-3xl mx-auto mt-8 bg-white p-6 rounded shadow">
+<!-- Main Container -->
+<div class="max-w-4xl mx-auto mt-8 bg-white p-6 rounded shadow-lg">
 
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    {% for message in messages %}
-      <div class="bg-red-200 p-2 mb-3 rounded">{{ message }}</div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="bg-red-200 p-2 mb-3 rounded">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 
-{% block content %}{% endblock %}
-
+    <!-- Page Content -->
+    {% block content %}{% endblock %}
 </div>
+
+<!-- Footer -->
+<footer class="bg-blue-600 text-white text-center p-4 mt-8">
+    &copy; 2026 Smart Price Finder. All Rights Reserved.
+</footer>
 
 </body>
 </html>
