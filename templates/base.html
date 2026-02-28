@@ -13,6 +13,15 @@
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(0,0,0,0.05);
         }
+        /* Dropdown animation */
+        .dropdown-animate {
+            display: none;
+            transform-origin: top right;
+        }
+        .dropdown-animate.show {
+            display: block;
+            animation: growOut 200s ease-in-out forwards;
+        }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800">
@@ -22,16 +31,41 @@
         Smart<span class="text-slate-900">Price</span>
     </a>
     
-    <div class="flex items-center space-x-6 font-medium">
-        <a href="/" class="text-slate-600 hover:text-indigo-600 transition">Home</a>
+    <div class="relative flex items-center">
+        
+        <button id="menu-button" onclick="toggleMenu()" class="p-2 rounded-xl text-slate-600 hover:bg-slate-100 focus:outline-none transition-all">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+            </svg>
+        </button>
 
-        {% if current_user.is_authenticated %}
-            <a href="/dashboard" class="text-slate-600 hover:text-indigo-600 transition">Dashboard</a>
-            <a href="/logout" class="bg-indigo-600 text-white px-5 py-2 rounded-full hover:bg-indigo-700 transition shadow-md">Logout</a>
-        {% else %}
-            <a href="/login" class="text-slate-600 hover:text-indigo-600 transition">Login</a>
-            <a href="/register" class="bg-indigo-600 text-white px-5 py-2 rounded-full hover:bg-indigo-700 transition shadow-lg">Register</a>
-        {% endif %}
+        <div id="dropdown-menu" class="hidden absolute right-0 top-12 w-52 bg-white rounded-2xl shadow-2xl border border-slate-100 py-2 z-50 overflow-hidden">
+            <a href="/" class="flex items-center px-4 py-3 text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition">
+                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                Home
+            </a>
+
+            {% if current_user.is_authenticated %}
+                <a href="/dashboard" class="flex items-center px-4 py-3 text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition">
+                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    Dashboard
+                </a>
+                <div class="border-t border-slate-50 my-1"></div>
+                <a href="/logout" class="flex items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition">
+                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    Logout
+                </a>
+            {% else %}
+                <a href="/login" class="flex items-center px-4 py-3 text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition">
+                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    Login
+                </a>
+                <a href="/register" class="flex items-center px-4 py-3 text-sm text-white bg-indigo-600 hover:bg-indigo-700 transition mx-2 my-1 rounded-xl shadow-md">
+                    <svg class="w-4 h-4 mr-3 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                    Register
+                </a>
+            {% endif %}
+        </div>
     </div>
 </nav>
 
@@ -40,7 +74,7 @@
     {% with messages = get_flashed_messages() %}
       {% if messages %}
         {% for message in messages %}
-          <div class="flex items-center p-4 mb-6 text-sm text-red-800 border border-red-100 rounded-xl bg-red-50 shadow-sm" role="alert">
+          <div class="flex items-center p-4 mb-6 text-sm text-red-800 border border-red-100 rounded-xl bg-red-50 shadow-sm animate-pulse" role="alert">
             <svg class="flex-shrink-0 inline w-4 h-4 mr-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
             </svg>
@@ -50,7 +84,7 @@
       {% endif %}
     {% endwith %}
 
-    <main class="animate-in fade-in duration-700">
+    <main class="animate-in fade-in slide-in-from-top-4 duration-700">
         {% block content %}{% endblock %}
     </main>
 
@@ -59,6 +93,22 @@
 <footer class="text-center py-10 text-slate-400 text-sm">
     &copy; 2024 Smart Price Finder. All rights reserved.
 </footer>
+
+<script>
+    function toggleMenu() {
+        const menu = document.getElementById('dropdown-menu');
+        menu.classList.toggle('hidden');
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(event) {
+        const menu = document.getElementById('dropdown-menu');
+        const button = document.getElementById('menu-button');
+        if (!button.contains(event.target) && !menu.contains(event.target)) {
+            menu.classList.add('hidden');
+        }
+    });
+</script>
 
 </body>
 </html>
