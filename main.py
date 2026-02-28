@@ -7,20 +7,17 @@ import requests
 import time
 
 app = Flask(__name__)
-# Render secret key setup
 app.secret_key = os.environ.get("SECRET_KEY", "supersecretkey_123")
 
-# Database configuration
+# Database setup
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
 db = SQLAlchemy(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
-# ---------------- DATABASE MODEL ----------------
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True) 
     username = db.Column(db.String(150), unique=True, nullable=False)
@@ -30,66 +27,75 @@ class User(UserMixin, db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# ---------------- AFFILIATE CONFIG ----------------
+# --- AFFILIATE CONFIG ---
 AMAZON_TAG = os.environ.get("AMAZON_TAG", "smartprice-21") 
 FLIPKART_AFFID = os.environ.get("FLIPKART_AFFID", "your_affid")
 
-# ---------------- PRODUCT FUNCTION (RETRY + TIMEOUT FIX) ----------------
+# --- SMART API LOGIC ---
 def get_product_data(product):
-    url = "https://real-time-product-search.p.rapidapi.com/search"
-    # Search parameters ko broad kiya taaki results milein
-    querystring = {"q": product, "country": "in", "language": "en", "limit": "1"}
-    
     api_key = os.environ.get("RAPIDAPI_KEY", "baa2460488msha5e400b4aafc679p14ae78jsnb144d2abc757").strip()
-
+    
+    # PEHLA RASTA: Amazon Real-Time API (Fasrt & Accurate)
+    # Note: Apne naye Amazon API ka host yahan check karke badlein agar alag hai
+    amazon_url = "https://amazon-real-time-product-search.p.rapidapi.com/search" 
     headers = {
+        "x-rapidapi-key": api_key,
+        "x-rapidapi-host": "amazon-real-time-product-search.p.rapidapi.com"
+    }
+    
+    try:
+        # Amazon API ko 15s ka time dein
+        res = requests.get(amazon_url, headers=headers, params={"q": product, "country": "IN"}, timeout=15)
+        if res.status_code == 200:
+            data = res.json()
+            if data.get('data') and len(data['data']) > 0:
+                item = data['data'][0]
+                return {
+                    "title": item.get('product_title', product.title()),
+                    "price": item.get('product_price') or "Check Store",
+                    "image": item.get('product_photo', "https://via.placeholder.com/250"),
+                    "amazon_link": f"{item.get('product_url')}&tag={AMAZON_TAG}",
+                    "flipkart_link": f"https://www.flipkart.com/search?q={product}&affid={FLIPKART_AFFID}",
+                    "is_fallback": False
+                }
+    except Exception as e:
+        print(f"Amazon API Error: {e}")
+
+    # DUSRA RASTA: Real-Time Product Search (Pichli Wali API)
+    # Agar Amazon API fail ho jaye, toh ise call karein
+    fallback_url = "https://real-time-product-search.p.rapidapi.com/search"
+    headers_fb = {
         "x-rapidapi-key": api_key,
         "x-rapidapi-host": "real-time-product-search.p.rapidapi.com"
     }
-
-    # Dashboard 22s dikha raha hai, isliye 35s timeout
-    for attempt in range(2):
-        try:
-            response = requests.get(url, headers=headers, params=querystring, timeout=35)
-            if response.status_code == 200:
-                data = response.json()
-                # Empty body (2 bytes) check
-                if data.get('data') and len(data['data']) > 0:
-                    item = data['data'][0]
-                    raw_url = item.get('product_url', '')
-                    
-                    # Affiliate link generation
-                    amazon_link = f"{raw_url}&tag={AMAZON_TAG}" if "amazon.in" in raw_url else f"https://www.amazon.in/s?k={product}&tag={AMAZON_TAG}"
-                    flipkart_link = f"https://www.flipkart.com/search?q={product}&affid={FLIPKART_AFFID}"
-                    
-                    return {
-                        "title": item.get('product_title', product.title()),
-                        "price": item.get('offer', {}).get('price') or item.get('product_price') or "Check Store",
-                        "image": item.get('product_photos', ["https://via.placeholder.com/250"])[0],
-                        "amazon_link": amazon_link,
-                        "flipkart_link": flipkart_link,
-                        "is_fallback": False
-                    }
-            time.sleep(2) # API retry gap
-        except Exception as e:
-            print(f"API Error: {e}")
     
+    try:
+        res_fb = requests.get(fallback_url, headers=headers_fb, params={"q": product, "country": "in"}, timeout=25)
+        if res_fb.status_code == 200:
+            data_fb = res_fb.json()
+            if data_fb.get('data') and len(data_fb['data']) > 0:
+                item = data_fb['data'][0]
+                return {
+                    "title": item.get('product_title', product.title()),
+                    "price": item.get('product_price') or "Check Store",
+                    "image": item.get('product_photos', ["https://via.placeholder.com/250"])[0],
+                    "amazon_link": f"https://www.amazon.in/s?k={product}&tag={AMAZON_TAG}",
+                    "flipkart_link": f"https://www.flipkart.com/search?q={product}&affid={FLIPKART_AFFID}",
+                    "is_fallback": False
+                }
+    except Exception as e:
+        print(f"Fallback API Error: {e}")
+
     return None
 
-# ---------------- ROUTES ----------------
 @app.route("/", methods=["GET", "POST"])
 def home():
     product_data = None
-    trending_deals = [
-        {"name": "iPhone 15", "img": "https://m.media-amazon.com/images/I/71d7rfSl0wL._SL1500_.jpg"},
-        {"name": "HP Chromebook", "img": "https://m.media-amazon.com/images/I/719hSnd-N0L._SL1500_.jpg"}
-    ]
-    
     if request.method == "POST":
         product = request.form.get("product")
         if product:
             product_data = get_product_data(product)
-            # Fallback agar API slow ho
+            # TEESRA RASTA: Dono API fail hone par Affiliate Link dikhao
             if not product_data:
                 product_data = {
                     "title": product.title(),
@@ -99,51 +105,13 @@ def home():
                     "flipkart_link": f"https://www.flipkart.com/search?q={product}&affid={FLIPKART_AFFID}",
                     "is_fallback": True
                 }
-    return render_template("index.html", product_data=product_data, trending_deals=trending_deals)
+    return render_template("index.html", product_data=product_data)
 
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = generate_password_hash(request.form["password"])
-        if User.query.filter_by(username=username).first():
-            flash("User already exists!")
-            return redirect(url_for("register"))
-        new_user = User(username=username, password=password)
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for("login"))
-    return render_template("register.html")
+# ... (baaki routes register/login purane hi rakhein) ...
 
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.password, password):
-            login_user(user)
-            return redirect(url_for("dashboard"))
-        flash("Invalid Credentials!")
-    return render_template("login.html")
-
-@app.route("/dashboard")
-@login_required
-def dashboard():
-    users = User.query.all()
-    return render_template("dashboard.html", users=users)
-
-@app.route("/logout")
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for("home"))
-
-# ---------------- RENDER DEPLOYMENT FIX ----------------
 with app.app_context():
     db.create_all()
 
 if __name__ == "__main__":
-    # Render scan ke liye port aur host zaroori hain
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
