@@ -20,7 +20,7 @@ login_manager.login_view = "login"
 
 # ---------------- DATABASE MODEL ----------------
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(code.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
 
@@ -30,49 +30,34 @@ def load_user(user_id):
 
 # ---------------- PRODUCT FUNCTION ----------------
 def get_product_data(product):
-    # Dhyan dein: Hum 'search' endpoint use kar rahe hain jo product search ke liye sahi hai
     url = "https://real-time-product-search.p.rapidapi.com/search"
+    querystring = {"q": product, "country": "in", "language": "en"}
     
-    querystring = {
-        "q": product,
-        "country": "in",
-        "language": "en"
-    }
-
-    # Aapki API Key
-    api_key = os.environ.get("RAPIDAPI_KEY", "baa2460488msha5e400b4aafc679p14ae78jsnb144d2abc757")
+    # API Key from Render Environment
+    api_key = os.environ.get("RAPIDAPI_KEY", "baa2460488msha5e400b4aafc679p14ae78jsnb144d2abc757").strip()
 
     headers = {
-        "x-rapidapi-key": api_key.strip(),
+        "x-rapidapi-key": api_key,
         "x-rapidapi-host": "real-time-product-search.p.rapidapi.com"
     }
 
     try:
-        response = requests.get(url, headers=headers, params=querystring, timeout=15)
-        
+        response = requests.get(url, headers=headers, params=querystring, timeout=12)
         if response.status_code == 200:
             data = response.json()
             if data.get('data') and len(data['data']) > 0:
                 item = data['data'][0]
+                price = item.get('offer', {}).get('price') or item.get('product_price') or "Price Check Karein"
                 
-                # Price extraction logic
-                price = "Check Store"
-                if item.get('offer'):
-                    price = item['offer'].get('price', "Check Store")
-                elif item.get('product_price'):
-                    price = item.get('product_price')
-
                 return {
                     "title": item.get('product_title', product.title()),
                     "price": price,
                     "image": item.get('product_photos', ["https://via.placeholder.com/250"])[0],
-                    "amazon_link": item.get('product_url', f"https://www.amazon.in/s?k={product}"),
-                    "flipkart_link": f"https://www.flipkart.com/search?q={product}"
+                    "amazon_link": item.get('product_url'),
+                    "flipkart_link": f"https://www.flipkart.com/search?q={product}",
+                    "is_fallback": False
                 }
-        else:
-            # Agar error status code aata hai toh console mein print hoga
-            print(f"API Error: {response.status_code} - {response.text}")
-            
+        print(f"API Debug: Status {response.status_code}")
     except Exception as e:
         print(f"Connection Error: {e}")
     
@@ -86,8 +71,17 @@ def home():
         product = request.form.get("product")
         if product:
             product_data = get_product_data(product)
+            
+            # AGAR API FAIL HO JAYE -> FALLBACK BUTTONS DIKHAO
             if not product_data:
-                flash("Product nahi mila. Please try searching for a common item like 'iPhone'.")
+                product_data = {
+                    "title": product.title(),
+                    "price": "Price Not Found (API Issue)",
+                    "image": "https://via.placeholder.com/250?text=Check+Online",
+                    "amazon_link": f"https://www.amazon.in/s?k={product}",
+                    "flipkart_link": f"https://www.flipkart.com/search?q={product}",
+                    "is_fallback": True
+                }
     return render_template("index.html", product_data=product_data)
 
 @app.route("/register", methods=["GET", "POST"])
@@ -101,7 +95,7 @@ def register():
         new_user = User(username=username, password=password)
         db.session.add(new_user)
         db.session.commit()
-        flash("Registration successful! Please login.")
+        flash("Registration successful!")
         return redirect(url_for("login"))
     return render_template("register.html")
 
@@ -114,8 +108,7 @@ def login():
         if user and check_password_hash(user.password, password):
             login_user(user)
             return redirect(url_for("dashboard"))
-        else:
-            flash("Invalid username or password!")
+        flash("Invalid login!")
     return render_template("login.html")
 
 @app.route("/dashboard")
@@ -135,6 +128,5 @@ with app.app_context():
     db.create_all()
 
 if __name__ == "__main__":
-    # Render port setting
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
