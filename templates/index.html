@@ -1,74 +1,103 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="text-center mb-12">
-    <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">
-        Sahi Price, <span class="text-indigo-600">Sahi Choice!</span>
+<div class="max-w-4xl mx-auto bg-[#0f172a] rounded-[2.5rem] p-8 md:p-12 shadow-2xl mb-16 text-center border border-slate-800">
+    <h1 class="text-3xl md:text-4xl font-extrabold text-white mb-4 tracking-tight">
+        Search Price History
     </h1>
-    <p class="text-lg text-slate-600 max-w-2xl mx-auto">
-        Amazon aur Flipkart ke prices compare karein aur sabse sasti deal payein sirf ek click mein.
-    </p>
-</div>
+    
+    <div class="max-w-2xl mx-auto mt-8">
+        <form method="POST" class="relative group">
+            <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-slate-400 group-focus-within:text-indigo-400 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <input type="text" name="product" required
+                class="block w-full pl-14 pr-36 py-5 bg-[#1e293b] border-none rounded-2xl text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 text-lg transition-all"
+                placeholder="Enter Product Name (e.g. iPhone 15)">
+            
+            <button type="submit"
+                class="absolute right-2 top-2 bottom-2 bg-indigo-600 text-white px-8 rounded-xl font-bold hover:bg-indigo-500 active:scale-95 transition-all shadow-lg">
+                Search
+            </button>
+        </form>
+    </div>
 
-<div class="max-w-2xl mx-auto mb-16">
-    <form method="POST" class="relative group">
-        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <svg class="h-6 w-6 text-slate-400 group-focus-within:text-indigo-600 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-        </div>
-        <input type="text" name="product" required
-            class="block w-full pl-12 pr-32 py-4 bg-white border-2 border-slate-100 rounded-2xl leading-5 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 sm:text-lg transition-all shadow-sm"
-            placeholder="Search for Mobiles, Laptops, etc...">
-        
-        <button type="submit"
-            class="absolute right-2 top-2 bottom-2 bg-indigo-600 text-white px-8 rounded-xl font-bold hover:bg-indigo-700 hover:shadow-lg active:scale-95 transition-all">
-            Search
-        </button>
-    </form>
+    <div class="mt-8 flex flex-wrap justify-center gap-4 text-sm text-slate-400 font-medium">
+        <span class="text-indigo-400 cursor-pointer hover:underline">Amazon Price Tracker</span>
+        <span class="text-slate-600">|</span>
+        <span class="text-indigo-400 cursor-pointer hover:underline">Flipkart Price Tracker</span>
+        <span class="text-slate-600">|</span>
+        <span class="text-slate-300">Latest Deals</span>
+    </div>
 </div>
 
 {% if product_data %}
-<div class="max-w-md mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 animate-in slide-in-from-bottom duration-500">
-    
-    {% if product_data.is_fallback %}
-    <div class="bg-amber-50 p-3 text-center text-xs text-amber-700 font-medium border-b border-amber-100">
-        ⚠️ Live price nahi mil paya, niche buttons se direct check karein.
-    </div>
-    {% endif %}
+<div id="results" class="max-w-md mx-auto mb-20 animate-in slide-in-from-bottom duration-700">
+    <div class="bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-slate-100">
+        
+        {% if product_data.is_fallback %}
+        <div class="bg-amber-50 p-3 text-center text-[10px] text-amber-700 font-bold uppercase tracking-widest border-b border-amber-100">
+            ⚠️ Live API Data Unavailable - Use Direct Links Below
+        </div>
+        {% endif %}
 
-    <div class="bg-slate-50 p-8 flex justify-center">
-        <img src="{{ product_data.image }}" alt="Product" class="h-56 object-contain transform hover:scale-105 transition duration-300">
-    </div>
+        <div class="bg-slate-50 p-10 flex justify-center">
+            <img src="{{ product_data.image }}" alt="Product" class="h-60 object-contain hover:scale-105 transition duration-500">
+        </div>
 
-    <div class="p-6">
-        <div class="mb-4 text-center">
-            <h2 class="text-2xl font-bold text-slate-800 line-clamp-2 leading-tight">{{ product_data.title }}</h2>
-            <div class="mt-2 inline-block px-4 py-1 {% if product_data.is_fallback %}bg-slate-100 text-slate-500{% else %}bg-green-100 text-green-700{% endif %} rounded-full font-bold text-lg">
-                {{ product_data.price }}
+        <div class="p-8">
+            <div class="mb-6 text-center">
+                <h2 class="text-xl font-extrabold text-slate-900 line-clamp-2 leading-snug mb-3">{{ product_data.title }}</h2>
+                <div class="inline-block px-6 py-2 {% if product_data.is_fallback %}bg-slate-100 text-slate-500{% else %}bg-green-100 text-green-700{% endif %} rounded-full font-black text-xl">
+                    {{ product_data.price }}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <a href="{{ product_data.amazon_link }}" target="_blank"
+                   class="flex flex-col items-center justify-center p-4 border-2 border-orange-50 rounded-2xl hover:bg-orange-50 hover:border-orange-200 transition-all shadow-sm">
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Buy on</span>
+                    <span class="text-orange-600 font-black text-lg">Amazon</span>
+                </a>
+
+                <a href="{{ product_data.flipkart_link }}" target="_blank"
+                   class="flex flex-col items-center justify-center p-4 border-2 border-blue-50 rounded-2xl hover:bg-blue-50 hover:border-blue-200 transition-all shadow-sm">
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Buy on</span>
+                    <span class="text-blue-600 font-black text-lg">Flipkart</span>
+                </a>
             </div>
         </div>
-
-        <div class="grid grid-cols-2 gap-4">
-            <a href="{{ product_data.amazon_link }}" target="_blank"
-               class="flex flex-col items-center justify-center p-3 border-2 border-orange-100 rounded-2xl hover:bg-orange-50 hover:border-orange-200 transition group shadow-sm hover:shadow-md">
-                <span class="text-xs text-slate-400 font-semibold mb-1 uppercase tracking-wider">Buy on</span>
-                <span class="text-orange-600 font-extrabold text-lg">Amazon</span>
-            </a>
-
-            <a href="{{ product_data.flipkart_link }}" target="_blank"
-               class="flex flex-col items-center justify-center p-3 border-2 border-blue-100 rounded-2xl hover:bg-blue-50 hover:border-blue-200 transition group shadow-sm hover:shadow-md">
-                <span class="text-xs text-slate-400 font-semibold mb-1 uppercase tracking-wider">Buy on</span>
-                <span class="text-blue-600 font-extrabold text-lg">Flipkart</span>
-            </a>
-        </div>
     </div>
 </div>
-
-<div class="text-center mt-6">
-    <p class="text-slate-400 text-xs italic">Prices up-to-date nahi ho sakte. Store par click karke confirm karein.</p>
-</div>
-
 {% endif %}
+
+<div class="mt-12">
+    <div class="flex items-center justify-between mb-8">
+        <h2 class="text-2xl font-black text-slate-900 flex items-center">
+            <span class="w-2 h-8 bg-indigo-600 rounded-full mr-3"></span>
+            Trending Deals
+        </h2>
+        <a href="#" class="text-indigo-600 font-bold text-sm hover:underline">View All</a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for deal in trending_deals %}
+        <div class="bg-white p-6 rounded-3xl shadow-lg border border-slate-50 hover:shadow-xl transition-all group">
+            <div class="h-40 flex justify-center mb-4 bg-slate-50 rounded-2xl p-4 overflow-hidden">
+                <img src="{{ deal.img }}" class="object-contain group-hover:scale-110 transition duration-500">
+            </div>
+            <h3 class="font-bold text-slate-800 text-lg mb-4">{{ deal.name }}</h3>
+            <form action="/" method="POST">
+                <input type="hidden" name="product" value="{{ deal.name }}">
+                <button type="submit" class="w-full py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-indigo-600 hover:text-white transition-colors">
+                    Check Price
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 
 {% endblock %}
