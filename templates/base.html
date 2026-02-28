@@ -10,6 +10,7 @@
 <span class="font-bold">Smart Price Finder</span>
 <div>
 <a href="/" class="mr-3">Home</a>
+
 {% if current_user.is_authenticated %}
 <a href="/dashboard" class="mr-3">Dashboard</a>
 <a href="/logout">Logout</a>
@@ -17,10 +18,12 @@
 <a href="/login" class="mr-3">Login</a>
 <a href="/register">Register</a>
 {% endif %}
+
 </div>
 </nav>
 
 <div class="max-w-3xl mx-auto mt-8 bg-white p-6 rounded shadow">
+
 {% with messages = get_flashed_messages() %}
   {% if messages %}
     {% for message in messages %}
@@ -30,6 +33,7 @@
 {% endwith %}
 
 {% block content %}{% endblock %}
+
 </div>
 
 </body>
