@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Price Compare</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 50px; }
+        .search-box { margin-bottom: 20px; }
+        .result { border: 1px solid #ddd; padding: 20px; display: inline-block; }
+    </style>
+</head>
+<body>
+    <h1>Check Price 🔍</h1>
+    <form method="POST" class="search-box">
+        <input type="text" name="p_name" placeholder="Enter Product Name">
+        <button type="submit">Search</button>
+    </form>
+
+    {% if prices %}
+    <div class="result">
+        <h3>Amazon Price: {{ prices.amazon }}</h3>
+        <p>(Real-time Data fetched by Python)</p>
+    </div>
+    {% endif %}
+</body>
+</html>
