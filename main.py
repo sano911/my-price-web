@@ -30,7 +30,7 @@ def load_user(user_id):
 
 # ---------------- PRODUCT FUNCTION ----------------
 def get_product_data(product):
-    # Search endpoint use kar rahe hain
+    # Search endpoint use karein
     url = "https://real-time-product-search.p.rapidapi.com/search"
     
     querystring = {
@@ -39,8 +39,9 @@ def get_product_data(product):
         "language": "en"
     }
 
-    # Render Environment Variable se key uthayega, nahi toh ye default use karega
-    api_key = os.environ.get("RAPIDAPI_KEY", "baa2460488msha5e400b4aafc679p14ae78jsnb144d2abc757")
+    # Aapki key jo screenshots mein dikh rahi hai
+    raw_key = os.environ.get("RAPIDAPI_KEY", "baa2460488msha5e400b4aafc679p14ae78jsnb144d2abc757")
+    api_key = raw_key.strip() # Spaces hatane ke liye
 
     headers = {
         "x-rapidapi-key": api_key,
@@ -48,34 +49,38 @@ def get_product_data(product):
     }
 
     try:
-        print(f"Searching for: {product}")
+        print(f"DEBUG: Requesting data for: {product}")
         response = requests.get(url, headers=headers, params=querystring, timeout=15)
         
         # Check if request was successful
-        response.raise_for_status() 
-        data = response.json()
-        
-        # Logs mein check karne ke liye
-        print(f"API Success: {data.get('status')}")
+        if response.status_code == 200:
+            data = response.json()
+            if data.get('data') and len(data['data']) > 0:
+                item = data['data'][0]
+                
+                # Flexible price extraction
+                price = "Check Store"
+                if item.get('offer'):
+                    price = item['offer'].get('price', "Check Store")
+                elif item.get('product_price'):
+                    price = item.get('product_price')
 
-        if data.get('data') and len(data['data']) > 0:
-            item = data['data'][0]
-            
-            # Kuch APIs mein price 'offer' ke andar hota hai, kuch mein 'product_price'
-            price = item.get('offer', {}).get('price') or item.get('product_price', "Check on Store")
-            
-            return {
-                "title": item.get('product_title', product.title()),
-                "price": price,
-                "image": item.get('product_photos', ["https://via.placeholder.com/250"])[0],
-                "amazon_link": item.get('product_url', f"https://www.amazon.in/s?k={product}"),
-                "flipkart_link": f"https://www.flipkart.com/search?q={product}"
-            }
+                return {
+                    "title": item.get('product_title', product.title()),
+                    "price": price,
+                    "image": item.get('product_photos', ["https://via.placeholder.com/250"])[0],
+                    "amazon_link": item.get('product_url', f"https://www.amazon.in/s?k={product}"),
+                    "flipkart_link": f"https://www.flipkart.com/search?q={product}"
+                }
+            else:
+                print("DEBUG: API returned 200 but no data found.")
+        elif response.status_code == 401:
+            print("DEBUG: API Error 401 - Subscription active nahi hai ya key galat hai.")
         else:
-            print("No data found for this product.")
+            print(f"DEBUG: API Error {response.status_code}: {response.text}")
             
     except Exception as e:
-        print(f"Critical API Error: {e}")
+        print(f"DEBUG: Connection Error: {e}")
     
     return None
 
@@ -88,7 +93,7 @@ def home():
         if product:
             product_data = get_product_data(product)
             if not product_data:
-                flash("Product nahi mila ya API error hai.")
+                flash("Product nahi mila ya API error hai. Check your subscription.")
     return render_template("index.html", product_data=product_data)
 
 @app.route("/register", methods=["GET", "POST"])
@@ -136,6 +141,5 @@ with app.app_context():
     db.create_all()
 
 if __name__ == "__main__":
-    # Render port automatically handle karega
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
