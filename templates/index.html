@@ -1,29 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Price Hunter</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Hunter</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #f4f4f4; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
-        input { width: 80%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
-        button { padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        .result { margin-top: 20px; text-align: left; }
-        .price-box { border-bottom: 1px solid #eee; padding: 10px 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        h2 { color: #1a73e8; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        button:hover { background-color: #218838; }
+        .results { margin-top: 25px; text-align: left; background: #f8f9fa; padding: 15px; border-radius: 8px; }
+        .price-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .price-row:last-child { border-bottom: none; }
+        .store-name { font-weight: bold; color: #555; }
+        .price-value { color: #d9534f; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2>Price Comparison 🔍</h2>
+    <div class="container">
+        <h2>Price Hunter 🔍</h2>
         <form method="POST">
-            <input type="text" name="product" placeholder="Enter Product Name (e.g. iPhone 15)" required>
-            <button type="submit">Search Price</button>
+            <input type="text" name="product" placeholder="Product Name (e.g. iPhone 15)" required>
+            <button type="submit">Check Prices</button>
         </form>
 
         {% if amazon or flipkart %}
-        <div class="result">
-            <div class="price-box"><strong>Amazon:</strong> {{ amazon }}</div>
-            <div class="price-box"><strong>Flipkart:</strong> {{ flipkart }}</div>
+        <div class="results">
+            <div class="price-row">
+                <span class="store-name">Amazon:</span>
+                <span class="price-value">{{ amazon }}</span>
+            </div>
+            <div class="price-row">
+                <span class="store-name">Flipkart:</span>
+                <span class="price-value">{{ flipkart }}</span>
+            </div>
         </div>
         {% endif %}
     </div>
