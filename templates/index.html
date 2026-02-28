@@ -1,23 +1,20 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Smart Price Finder</title>
-</head>
-<body style="font-family: Arial; text-align:center; padding:40px;">
+<body style="text-align:center; padding:40px;">
 
-    <h2>Smart Price Finder 🔍</h2>
+<h2>Smart Price Finder</h2>
 
-    <form method="POST">
-        <input type="text" name="product" placeholder="Enter product name" required>
-        <button type="submit">Search</button>
-    </form>
+<form method="POST">
+    <input type="text" name="product" placeholder="Enter product name" required>
+    <button type="submit">Search</button>
+</form>
 
-    {% if amazon_link %}
-        <h3>Results for: {{ product }}</h3>
-        <a href="{{ amazon_link }}" target="_blank">
-            Buy on Amazon
-        </a>
-    {% endif %}
+{% if amazon_link %}
+    <h3>Results for: {{ product }}</h3>
+    <a href="{{ amazon_link }}" target="_blank">
+        Buy on Amazon
+    </a>
+{% endif %}
 
 </body>
 </html>
