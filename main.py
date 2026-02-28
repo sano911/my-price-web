@@ -30,7 +30,7 @@ def load_user(user_id):
 
 # ---------------- PRODUCT FUNCTION ----------------
 def get_product_data(product):
-    # 'search' endpoint use kar rahe hain jo sabse best hai
+    # Dhyan dein: Hum 'search' endpoint use kar rahe hain jo product search ke liye sahi hai
     url = "https://real-time-product-search.p.rapidapi.com/search"
     
     querystring = {
@@ -55,7 +55,7 @@ def get_product_data(product):
             if data.get('data') and len(data['data']) > 0:
                 item = data['data'][0]
                 
-                # Price nikalne ka logic
+                # Price extraction logic
                 price = "Check Store"
                 if item.get('offer'):
                     price = item['offer'].get('price', "Check Store")
@@ -69,8 +69,12 @@ def get_product_data(product):
                     "amazon_link": item.get('product_url', f"https://www.amazon.in/s?k={product}"),
                     "flipkart_link": f"https://www.flipkart.com/search?q={product}"
                 }
+        else:
+            # Agar error status code aata hai toh console mein print hoga
+            print(f"API Error: {response.status_code} - {response.text}")
+            
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Connection Error: {e}")
     
     return None
 
@@ -83,7 +87,7 @@ def home():
         if product:
             product_data = get_product_data(product)
             if not product_data:
-                flash("Product nahi mila. Check if subscription is active on RapidAPI.")
+                flash("Product nahi mila. Please try searching for a common item like 'iPhone'.")
     return render_template("index.html", product_data=product_data)
 
 @app.route("/register", methods=["GET", "POST"])
@@ -131,5 +135,6 @@ with app.app_context():
     db.create_all()
 
 if __name__ == "__main__":
+    # Render port setting
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
