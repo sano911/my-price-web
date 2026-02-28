@@ -4,6 +4,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import requests
+import time
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "supersecretkey_123")
@@ -29,15 +30,16 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 # ---------------- AFFILIATE CONFIG ----------------
-# Inhe apne Affiliate Dashboard se badlein
 AMAZON_TAG = os.environ.get("AMAZON_TAG", "smartprice-21") 
 FLIPKART_AFFID = os.environ.get("FLIPKART_AFFID", "your_affid")
 
-# ---------------- PRODUCT FUNCTION ----------------
+# ---------------- UPGRADED PRODUCT FUNCTION ----------------
 def get_product_data(product):
     url = "https://real-time-product-search.p.rapidapi.com/search"
     querystring = {"q": product, "country": "in", "language": "en"}
     
+    # Aapka dashboard dikha raha hai ki response slow hai (22s)
+    # Isliye hum timeout 30 seconds rakhenge
     api_key = os.environ.get("RAPIDAPI_KEY", "baa2460488msha5e400b4aafc679p14ae78jsnb144d2abc757").strip()
 
     headers = {
@@ -45,33 +47,33 @@ def get_product_data(product):
         "x-rapidapi-host": "real-time-product-search.p.rapidapi.com"
     }
 
-    try:
-        response = requests.get(url, headers=headers, params=querystring, timeout=12)
-        if response.status_code == 200:
-            data = response.json()
-            if data.get('data') and len(data['data']) > 0:
-                item = data['data'][0]
-                
-                # Raw URL extract karein
-                raw_url = item.get('product_url', '')
-                
-                # Affiliate Link Logic
-                # Amazon Tag append karein
-                amazon_aff_link = f"{raw_url}&tag={AMAZON_TAG}" if "amazon.in" in raw_url else f"https://www.amazon.in/s?k={product}&tag={AMAZON_TAG}"
-                # Flipkart Affiliate link generate karein
-                flipkart_aff_link = f"https://www.flipkart.com/search?q={product}&affid={FLIPKART_AFFID}"
-                
-                return {
-                    "title": item.get('product_title', product.title()),
-                    "price": item.get('offer', {}).get('price') or item.get('product_price') or "Check Store",
-                    "image": item.get('product_photos', ["https://via.placeholder.com/250"])[0],
-                    "amazon_link": amazon_aff_link,
-                    "flipkart_link": flipkart_aff_link,
-                    "is_fallback": False
-                }
-        print(f"DEBUG: Status {response.status_code}")
-    except Exception as e:
-        print(f"Connection Error: {e}")
+    # Retry logic: Agar pehli baar mein data na mile (Empty Body)
+    for attempt in range(2):
+        try:
+            response = requests.get(url, headers=headers, params=querystring, timeout=30)
+            if response.status_code == 200:
+                data = response.json()
+                # 2 Bytes body size fix: Check karein ki real data hai ya nahi
+                if data.get('data') and len(data['data']) > 0:
+                    item = data['data'][0]
+                    raw_url = item.get('product_url', '')
+                    
+                    # Affiliate Link Logic
+                    amazon_aff_link = f"{raw_url}&tag={AMAZON_TAG}" if "amazon.in" in raw_url else f"https://www.amazon.in/s?k={product}&tag={AMAZON_TAG}"
+                    flipkart_aff_link = f"https://www.flipkart.com/search?q={product}&affid={FLIPKART_AFFID}"
+                    
+                    return {
+                        "title": item.get('product_title', product.title()),
+                        "price": item.get('offer', {}).get('price') or item.get('product_price') or "Check Store",
+                        "image": item.get('product_photos', ["https://via.placeholder.com/250"])[0],
+                        "amazon_link": amazon_aff_link,
+                        "flipkart_link": flipkart_aff_link,
+                        "is_fallback": False
+                    }
+            # Agar data empty hai (2 bytes), thoda ruk kar dubara try karein
+            time.sleep(1) 
+        except Exception as e:
+            print(f"Attempt {attempt+1} failed: {e}")
     
     return None
 
@@ -89,8 +91,6 @@ def home():
         product = request.form.get("product")
         if product:
             product_data = get_product_data(product)
-            
-            # Fallback with Affiliate Tags
             if not product_data:
                 product_data = {
                     "title": product.title(),
@@ -141,7 +141,6 @@ def logout():
     logout_user()
     return redirect(url_for("home"))
 
-# ---------------- DEPLOYMENT ----------------
 with app.app_context():
     db.create_all()
 
