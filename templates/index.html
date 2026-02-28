@@ -1,71 +1,84 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="max-w-4xl mx-auto bg-[#0f172a] rounded-[2.5rem] p-8 md:p-12 shadow-2xl mb-16 text-center border border-slate-800">
-    <h1 class="text-3xl md:text-4xl font-extrabold text-white mb-4 tracking-tight">
+<div class="max-w-4xl mx-auto bg-[#0f172a] rounded-[2.5rem] p-10 md:p-16 shadow-2xl mb-16 text-center border border-slate-800 relative overflow-hidden">
+    <div class="absolute -top-24 -left-24 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl"></div>
+    
+    <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-6 tracking-tight">
         Search Price History
     </h1>
     
-    <div class="max-w-2xl mx-auto mt-8">
+    <div class="max-w-2xl mx-auto mt-10 relative">
         <form method="POST" class="relative group">
-            <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                <svg class="h-5 w-5 text-slate-400 group-focus-within:text-indigo-400 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+                <svg class="h-6 w-6 text-slate-500 group-focus-within:text-indigo-400 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
             </div>
             <input type="text" name="product" required
-                class="block w-full pl-14 pr-36 py-5 bg-[#1e293b] border-none rounded-2xl text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 text-lg transition-all"
-                placeholder="Enter Product Name (e.g. iPhone 15)">
+                class="block w-full pl-16 pr-40 py-5 bg-[#1e293b] border-2 border-transparent focus:border-indigo-500 rounded-2xl text-white placeholder-slate-500 focus:ring-4 focus:ring-indigo-500/20 text-lg transition-all outline-none"
+                placeholder="Paste Link or Enter Product Name...">
             
             <button type="submit"
-                class="absolute right-2 top-2 bottom-2 bg-indigo-600 text-white px-8 rounded-xl font-bold hover:bg-indigo-500 active:scale-95 transition-all shadow-lg">
+                class="absolute right-2 top-2 bottom-2 bg-indigo-600 text-white px-10 rounded-xl font-bold hover:bg-indigo-500 active:scale-95 transition-all shadow-lg flex items-center justify-center">
                 Search
             </button>
         </form>
     </div>
 
-    <div class="mt-8 flex flex-wrap justify-center gap-4 text-sm text-slate-400 font-medium">
-        <span class="text-indigo-400 cursor-pointer hover:underline">Amazon Price Tracker</span>
-        <span class="text-slate-600">|</span>
-        <span class="text-indigo-400 cursor-pointer hover:underline">Flipkart Price Tracker</span>
-        <span class="text-slate-600">|</span>
-        <span class="text-slate-300">Latest Deals</span>
+    <div class="mt-10 flex flex-wrap justify-center items-center gap-6 text-sm">
+        <a href="#" class="text-indigo-400 font-bold hover:text-white transition flex items-center">
+            <span class="mr-2">📦</span> Amazon Price Tracker
+        </a>
+        <span class="text-slate-700 hidden md:block">|</span>
+        <a href="#" class="text-indigo-400 font-bold hover:text-white transition flex items-center">
+            <span class="mr-2">🛍️</span> Flipkart Price Tracker
+        </a>
+        <span class="text-slate-700 hidden md:block">|</span>
+        <a href="#" class="text-slate-300 font-bold hover:text-white transition">Latest Deals</a>
     </div>
 </div>
 
 {% if product_data %}
 <div id="results" class="max-w-md mx-auto mb-20 animate-in slide-in-from-bottom duration-700">
-    <div class="bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-slate-100">
+    <div class="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100 group">
         
         {% if product_data.is_fallback %}
-        <div class="bg-amber-50 p-3 text-center text-[10px] text-amber-700 font-bold uppercase tracking-widest border-b border-amber-100">
-            ⚠️ Live API Data Unavailable - Use Direct Links Below
+        <div class="bg-red-50 p-4 text-center text-xs text-red-600 font-bold uppercase tracking-widest border-b border-red-100 flex items-center justify-center">
+            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"/></svg>
+            Live API Data Unavailable
         </div>
         {% endif %}
 
-        <div class="bg-slate-50 p-10 flex justify-center">
-            <img src="{{ product_data.image }}" alt="Product" class="h-60 object-contain hover:scale-105 transition duration-500">
+        <div class="bg-slate-50 p-12 flex justify-center relative">
+            <img src="{{ product_data.image }}" alt="Product" class="h-64 object-contain group-hover:scale-110 transition duration-700">
+            <div class="absolute top-4 right-6 bg-white/80 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-slate-500 shadow-sm border border-slate-100">
+                Verified Product
+            </div>
         </div>
 
         <div class="p-8">
-            <div class="mb-6 text-center">
-                <h2 class="text-xl font-extrabold text-slate-900 line-clamp-2 leading-snug mb-3">{{ product_data.title }}</h2>
-                <div class="inline-block px-6 py-2 {% if product_data.is_fallback %}bg-slate-100 text-slate-500{% else %}bg-green-100 text-green-700{% endif %} rounded-full font-black text-xl">
-                    {{ product_data.price }}
+            <div class="mb-8 text-center">
+                <h2 class="text-xl font-extrabold text-slate-900 line-clamp-2 leading-snug mb-4">{{ product_data.title }}</h2>
+                <div class="inline-flex flex-col items-center">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 mb-1 tracking-widest">Current Price</span>
+                    <div class="px-8 py-2.5 {% if product_data.is_fallback %}bg-slate-100 text-slate-500{% else %}bg-green-100 text-green-700{% endif %} rounded-2xl font-black text-2xl shadow-inner">
+                        {{ product_data.price }}
+                    </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <a href="{{ product_data.amazon_link }}" target="_blank"
-                   class="flex flex-col items-center justify-center p-4 border-2 border-orange-50 rounded-2xl hover:bg-orange-50 hover:border-orange-200 transition-all shadow-sm">
-                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Buy on</span>
-                    <span class="text-orange-600 font-black text-lg">Amazon</span>
+                   class="flex flex-col items-center justify-center p-4 border-2 border-orange-100 rounded-3xl hover:bg-orange-600 hover:text-white hover:border-orange-600 transition-all duration-300 shadow-sm">
+                    <span class="text-[10px] font-bold uppercase mb-1 opacity-70">Buy on</span>
+                    <span class="font-black text-lg">Amazon</span>
                 </a>
 
                 <a href="{{ product_data.flipkart_link }}" target="_blank"
-                   class="flex flex-col items-center justify-center p-4 border-2 border-blue-50 rounded-2xl hover:bg-blue-50 hover:border-blue-200 transition-all shadow-sm">
-                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Buy on</span>
-                    <span class="text-blue-600 font-black text-lg">Flipkart</span>
+                   class="flex flex-col items-center justify-center p-4 border-2 border-blue-100 rounded-3xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300 shadow-sm">
+                    <span class="text-[10px] font-bold uppercase mb-1 opacity-70">Buy on</span>
+                    <span class="font-black text-lg">Flipkart</span>
                 </a>
             </div>
         </div>
@@ -73,26 +86,27 @@
 </div>
 {% endif %}
 
-<div class="mt-12">
-    <div class="flex items-center justify-between mb-8">
-        <h2 class="text-2xl font-black text-slate-900 flex items-center">
-            <span class="w-2 h-8 bg-indigo-600 rounded-full mr-3"></span>
+<div class="mt-20">
+    <div class="flex items-center justify-between mb-10">
+        <h2 class="text-3xl font-black text-slate-900 flex items-center">
+            <span class="w-2.5 h-10 bg-indigo-600 rounded-full mr-4 shadow-lg shadow-indigo-200"></span>
             Trending Deals
         </h2>
-        <a href="#" class="text-indigo-600 font-bold text-sm hover:underline">View All</a>
+        <a href="#" class="px-6 py-2 bg-white border border-slate-200 rounded-full text-indigo-600 font-bold text-sm hover:bg-indigo-600 hover:text-white transition-all shadow-sm">View All Deals</a>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
         {% for deal in trending_deals %}
-        <div class="bg-white p-6 rounded-3xl shadow-lg border border-slate-50 hover:shadow-xl transition-all group">
-            <div class="h-40 flex justify-center mb-4 bg-slate-50 rounded-2xl p-4 overflow-hidden">
-                <img src="{{ deal.img }}" class="object-contain group-hover:scale-110 transition duration-500">
+        <div class="bg-white p-7 rounded-[2rem] shadow-xl border border-slate-50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group">
+            <div class="h-44 flex justify-center mb-6 bg-slate-50 rounded-3xl p-6 overflow-hidden relative">
+                <img src="{{ deal.img }}" class="object-contain group-hover:scale-110 transition duration-700">
+                <div class="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-black px-2.5 py-1 rounded-lg">HOT</div>
             </div>
-            <h3 class="font-bold text-slate-800 text-lg mb-4">{{ deal.name }}</h3>
+            <h3 class="font-extrabold text-slate-800 text-lg mb-6 line-clamp-1">{{ deal.name }}</h3>
             <form action="/" method="POST">
                 <input type="hidden" name="product" value="{{ deal.name }}">
-                <button type="submit" class="w-full py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-indigo-600 hover:text-white transition-colors">
-                    Check Price
+                <button type="submit" class="w-full py-4 bg-slate-900 text-white font-bold rounded-2xl group-hover:bg-indigo-600 transition-colors shadow-lg">
+                    Track Price History
                 </button>
             </form>
         </div>
