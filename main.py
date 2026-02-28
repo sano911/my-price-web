@@ -6,10 +6,9 @@ import os
 import requests
 
 app = Flask(__name__)
-# Secret key ko environment variable se uthayein ya default rakhein
 app.secret_key = os.environ.get("SECRET_KEY", "supersecretkey")
 
-# Database config - SQLite deployment ke liye thik hai
+# Database config
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -31,6 +30,7 @@ def load_user(user_id):
 
 # ---------------- PRODUCT FUNCTION ----------------
 def get_product_data(product):
+    # Search endpoint use kar rahe hain
     url = "https://real-time-product-search.p.rapidapi.com/search"
     
     querystring = {
@@ -39,8 +39,7 @@ def get_product_data(product):
         "language": "en"
     }
 
-    # API key ko environment variable se uthana best hai, 
-    # varna ye direct key bhi kaam karegi (lekin secure nahi hai)
+    # Render Environment Variable se key uthayega, nahi toh ye default use karega
     api_key = os.environ.get("RAPIDAPI_KEY", "baa2460488msha5e400b4aafc679p14ae78jsnb144d2abc757")
 
     headers = {
@@ -49,20 +48,34 @@ def get_product_data(product):
     }
 
     try:
-        response = requests.get(url, headers=headers, params=querystring, timeout=10)
+        print(f"Searching for: {product}")
+        response = requests.get(url, headers=headers, params=querystring, timeout=15)
+        
+        # Check if request was successful
+        response.raise_for_status() 
         data = response.json()
         
+        # Logs mein check karne ke liye
+        print(f"API Success: {data.get('status')}")
+
         if data.get('data') and len(data['data']) > 0:
             item = data['data'][0]
+            
+            # Kuch APIs mein price 'offer' ke andar hota hai, kuch mein 'product_price'
+            price = item.get('offer', {}).get('price') or item.get('product_price', "Check on Store")
+            
             return {
                 "title": item.get('product_title', product.title()),
-                "price": item.get('offer', {}).get('price', "Check on Store"),
+                "price": price,
                 "image": item.get('product_photos', ["https://via.placeholder.com/250"])[0],
                 "amazon_link": item.get('product_url', f"https://www.amazon.in/s?k={product}"),
                 "flipkart_link": f"https://www.flipkart.com/search?q={product}"
             }
+        else:
+            print("No data found for this product.")
+            
     except Exception as e:
-        print(f"API Error: {e}")
+        print(f"Critical API Error: {e}")
     
     return None
 
@@ -74,6 +87,8 @@ def home():
         product = request.form.get("product")
         if product:
             product_data = get_product_data(product)
+            if not product_data:
+                flash("Product nahi mila ya API error hai.")
     return render_template("index.html", product_data=product_data)
 
 @app.route("/register", methods=["GET", "POST"])
@@ -116,11 +131,11 @@ def logout():
     logout_user()
     return redirect(url_for("home"))
 
-# ---------------- DEPLOYMENT SETTINGS ----------------
-# Is block ke bina Render par tables nahi banenge
+# ---------------- DEPLOYMENT ----------------
 with app.app_context():
     db.create_all()
 
 if __name__ == "__main__":
+    # Render port automatically handle karega
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
