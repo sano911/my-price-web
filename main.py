@@ -6,9 +6,10 @@ import os
 import requests
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "supersecretkey")
+# Render par secret key set karne ke liye
+app.secret_key = os.environ.get("SECRET_KEY", "supersecretkey_123")
 
-# Database config
+# Database configuration
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -20,7 +21,7 @@ login_manager.login_view = "login"
 
 # ---------------- DATABASE MODEL ----------------
 class User(UserMixin, db.Model):
-    id = db.Column(code.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True) # FIX: code.Integer ko db.Integer kiya
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
 
@@ -33,7 +34,7 @@ def get_product_data(product):
     url = "https://real-time-product-search.p.rapidapi.com/search"
     querystring = {"q": product, "country": "in", "language": "en"}
     
-    # API Key from Render Environment
+    # API Key management
     api_key = os.environ.get("RAPIDAPI_KEY", "baa2460488msha5e400b4aafc679p14ae78jsnb144d2abc757").strip()
 
     headers = {
@@ -47,7 +48,8 @@ def get_product_data(product):
             data = response.json()
             if data.get('data') and len(data['data']) > 0:
                 item = data['data'][0]
-                price = item.get('offer', {}).get('price') or item.get('product_price') or "Price Check Karein"
+                # Price extraction logic
+                price = item.get('offer', {}).get('price') or item.get('product_price') or "Check Store"
                 
                 return {
                     "title": item.get('product_title', product.title()),
@@ -57,7 +59,7 @@ def get_product_data(product):
                     "flipkart_link": f"https://www.flipkart.com/search?q={product}",
                     "is_fallback": False
                 }
-        print(f"API Debug: Status {response.status_code}")
+        print(f"DEBUG: Status {response.status_code} - Plan may be inactive or limit reached")
     except Exception as e:
         print(f"Connection Error: {e}")
     
@@ -67,22 +69,29 @@ def get_product_data(product):
 @app.route("/", methods=["GET", "POST"])
 def home():
     product_data = None
+    # Trending deals dummy data for UI
+    trending_deals = [
+        {"name": "iPhone 15", "img": "https://m.media-amazon.com/images/I/71d7rfSl0wL._SL1500_.jpg"},
+        {"name": "Samsung S24", "img": "https://m.media-amazon.com/images/I/71R6C6n5EFL._SL1500_.jpg"},
+        {"name": "MacBook Air", "img": "https://m.media-amazon.com/images/I/71ItM9kooLL._SL1500_.jpg"}
+    ]
+    
     if request.method == "POST":
         product = request.form.get("product")
         if product:
             product_data = get_product_data(product)
             
-            # AGAR API FAIL HO JAYE -> FALLBACK BUTTONS DIKHAO
+            # Fallback logic: Agar API fail ho toh user ko Amazon/Flipkart buttons dikhao
             if not product_data:
                 product_data = {
                     "title": product.title(),
-                    "price": "Price Not Found (API Issue)",
-                    "image": "https://via.placeholder.com/250?text=Check+Online",
+                    "price": "Live Price Unavailable",
+                    "image": "https://via.placeholder.com/250?text=Search+Results",
                     "amazon_link": f"https://www.amazon.in/s?k={product}",
                     "flipkart_link": f"https://www.flipkart.com/search?q={product}",
                     "is_fallback": True
                 }
-    return render_template("index.html", product_data=product_data)
+    return render_template("index.html", product_data=product_data, trending_deals=trending_deals)
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -108,7 +117,7 @@ def login():
         if user and check_password_hash(user.password, password):
             login_user(user)
             return redirect(url_for("dashboard"))
-        flash("Invalid login!")
+        flash("Invalid Credentials!")
     return render_template("login.html")
 
 @app.route("/dashboard")
