@@ -1,77 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Price Finder</title>
+{% extends "base.html" %}
+{% block content %}
 
-<script src="https://cdn.tailwindcss.com"></script>
+<h1 class="text-xl font-bold mb-4">Search Product</h1>
 
-</head>
+<form method="POST" class="space-y-3">
+<input type="text" name="product" required
+class="w-full p-2 border rounded" placeholder="Enter product name">
+<button type="submit"
+class="bg-blue-600 text-white px-4 py-2 rounded w-full">
+Search
+</button>
+</form>
 
-<body class="bg-gray-100">
+{% if product_data %}
+<div class="mt-6 text-center">
+<h2 class="font-bold text-lg">{{ product_data.title }}</h2>
+<img src="{{ product_data.image }}" class="mx-auto my-3">
+<p class="font-semibold text-lg">{{ product_data.price }}</p>
 
-<!-- Navbar -->
-<nav class="bg-gradient-to-r from-blue-600 to-purple-600 p-4 shadow-lg">
-  <div class="container mx-auto flex justify-between items-center text-white">
-    <h1 class="text-xl font-bold">Smart Price Finder 🔍</h1>
-    <span class="text-sm">Find Best Deals Instantly</span>
-  </div>
-</nav>
-
-<!-- Hero Section -->
-<section class="text-center py-16 bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-  <h2 class="text-4xl font-bold mb-4">Compare Prices Across Stores</h2>
-  <p class="mb-6">Search any product and get instant buying links</p>
-
-  <form method="POST" class="max-w-md mx-auto flex gap-2">
-    <input type="text" name="product" placeholder="Enter product name..."
-      class="flex-1 p-3 rounded-lg text-black focus:outline-none"
-      required>
-    <button type="submit"
-      class="bg-black px-6 rounded-lg hover:bg-gray-800 transition">
-      Search
-    </button>
-  </form>
-</section>
-
-<!-- Results Section -->
-{% if amazon_link %}
-<section class="container mx-auto py-12">
-  <div class="bg-white rounded-2xl shadow-xl p-6 max-w-lg mx-auto text-center">
-
-    <h3 class="text-2xl font-bold mb-4">
-      Results for: {{ product }}
-    </h3>
-
-    <!-- Product Image (placeholder for now) -->
-    <img src="https://via.placeholder.com/250"
-         alt="Product Image"
-         class="mx-auto mb-4 rounded-lg shadow-md">
-
-    <div class="flex justify-center gap-4">
-
-      <a href="{{ amazon_link }}" target="_blank"
-         class="bg-orange-500 text-white px-5 py-2 rounded-lg hover:bg-orange-600 transition">
-        Buy on Amazon
-      </a>
-
-      <a href="https://www.flipkart.com/search?q={{ product }}"
-         target="_blank"
-         class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition">
-        Buy on Flipkart
-      </a>
-
-    </div>
-
-  </div>
-</section>
+<div class="flex justify-center gap-3 mt-3">
+<a href="{{ product_data.amazon_link }}" target="_blank"
+class="bg-orange-500 text-white px-4 py-2 rounded">
+Amazon
+</a>
+<a href="{{ product_data.flipkart_link }}" target="_blank"
+class="bg-blue-500 text-white px-4 py-2 rounded">
+Flipkart
+</a>
+</div>
+</div>
 {% endif %}
 
-<!-- Footer -->
-<footer class="bg-gray-900 text-white text-center p-4 mt-10">
-  © 2026 Smart Price Finder | Made with ❤️ by Akash
-</footer>
-
-</body>
-</html>
+{% endblock %}
