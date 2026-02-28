@@ -1,20 +1,50 @@
 <!DOCTYPE html>
-<html>
-<body style="text-align:center; padding:40px;">
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Price Finder</title>
 
-<h2>Smart Price Finder</h2>
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
 
-<form method="POST">
-    <input type="text" name="product" placeholder="Enter product name" required>
-    <button type="submit">Search</button>
-</form>
+</head>
+<body class="bg-gradient-to-br from-blue-600 to-purple-700 min-h-screen flex items-center justify-center">
 
-{% if amazon_link %}
-    <h3>Results for: {{ product }}</h3>
-    <a href="{{ amazon_link }}" target="_blank">
-        Buy on Amazon
-    </a>
-{% endif %}
+<div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md text-center">
+
+    <h1 class="text-2xl font-bold text-gray-800 mb-4">
+        Smart Price Finder 🔍
+    </h1>
+
+    <form method="POST" class="space-y-4">
+        <input type="text"
+               name="product"
+               placeholder="Enter product name..."
+               required
+               class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+
+        <button type="submit"
+                class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition duration-300">
+            Search
+        </button>
+    </form>
+
+    {% if amazon_link %}
+    <div class="mt-6 bg-gray-100 p-4 rounded-lg">
+        <p class="font-semibold text-gray-700 mb-2">
+            Results for: {{ product }}
+        </p>
+
+        <a href="{{ amazon_link }}"
+           target="_blank"
+           class="inline-block bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition">
+            Buy on Amazon
+        </a>
+    </div>
+    {% endif %}
+
+</div>
 
 </body>
 </html>
