@@ -1,26 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Price Compare</title>
+    <title>Price Hunter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 50px; }
-        .search-box { margin-bottom: 20px; }
-        .result { border: 1px solid #ddd; padding: 20px; display: inline-block; }
+        body { font-family: sans-serif; text-align: center; background: #f4f4f4; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        input { width: 80%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+        button { padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .result { margin-top: 20px; text-align: left; }
+        .price-box { border-bottom: 1px solid #eee; padding: 10px 0; }
     </style>
 </head>
 <body>
-    <h1>Check Price 🔍</h1>
-    <form method="POST" class="search-box">
-        <input type="text" name="p_name" placeholder="Enter Product Name">
-        <button type="submit">Search</button>
-    </form>
+    <div class="card">
+        <h2>Price Comparison 🔍</h2>
+        <form method="POST">
+            <input type="text" name="product" placeholder="Enter Product Name (e.g. iPhone 15)" required>
+            <button type="submit">Search Price</button>
+        </form>
 
-    {% if prices %}
-    <div class="result">
-        <h3>Amazon Price: {{ prices.amazon }}</h3>
-        <p>(Real-time Data fetched by Python)</p>
+        {% if amazon or flipkart %}
+        <div class="result">
+            <div class="price-box"><strong>Amazon:</strong> {{ amazon }}</div>
+            <div class="price-box"><strong>Flipkart:</strong> {{ flipkart }}</div>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 </body>
 </html>
-
