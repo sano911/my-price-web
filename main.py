@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
+import requests  # Naya: API call ke liye
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
@@ -32,12 +33,45 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-# ---------------- PRODUCT FUNCTION ----------------
+# ---------------- PRODUCT FUNCTION (API Integrated) ----------------
 
 def get_product_data(product):
+    # RapidAPI Configuration
+    url = "https://real-time-product-search.p.rapidapi.com/search"
+    
+    querystring = {
+        "q": product,
+        "country": "in",  # India ke liye products
+        "language": "en"
+    }
+
+    headers = {
+        "x-rapidapi-key": "baa2460488msha5e400b4aafc679p14ae78jsnb144d2abc757",
+        "x-rapidapi-host": "real-time-product-search.p.rapidapi.com"
+    }
+
+    try:
+        response = requests.get(url, headers=headers, params=querystring)
+        data = response.json()
+        
+        # Agar API se data milta hai
+        if data.get('data') and len(data['data']) > 0:
+            item = data['data'][0] # Pehla product uthate hain
+            
+            return {
+                "title": item.get('product_title', product.title()),
+                "price": item.get('offer', {}).get('price', "Check on Store"),
+                "image": item.get('product_photos', ["https://via.placeholder.com/250"])[0],
+                "amazon_link": item.get('product_url', f"https://www.amazon.in/s?k={product}"),
+                "flipkart_link": f"https://www.flipkart.com/search?q={product}"
+            }
+    except Exception as e:
+        print(f"API Error: {e}")
+    
+    # Fallback agar API fail ho jaye
     return {
-        "title": product.title(),
-        "price": "₹19,999",
+        "title": f"{product.title()} (Not Found)",
+        "price": "N/A",
         "image": "https://via.placeholder.com/250",
         "amazon_link": f"https://www.amazon.in/s?k={product}",
         "flipkart_link": f"https://www.flipkart.com/search?q={product}"
@@ -51,7 +85,8 @@ def home():
     product_data = None
     if request.method == "POST":
         product = request.form.get("product")
-        product_data = get_product_data(product)
+        if product:
+            product_data = get_product_data(product)
     return render_template("index.html", product_data=product_data)
 
 
@@ -106,7 +141,7 @@ def logout():
     return redirect(url_for("home"))
 
 
-# ---------------- RUN APP (Render Compatible) ----------------
+# ---------------- RUN APP ----------------
 
 if __name__ == "__main__":
     with app.app_context():
