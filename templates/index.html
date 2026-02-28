@@ -28,18 +28,15 @@
     </form>
 </div>
 
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    {% for message in messages %}
-      <div class="max-w-md mx-auto mb-4 p-4 bg-red-100 text-red-700 rounded-xl text-center font-medium">
-        {{ message }}
-      </div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
-
 {% if product_data %}
 <div class="max-w-md mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 animate-in slide-in-from-bottom duration-500">
+    
+    {% if product_data.is_fallback %}
+    <div class="bg-amber-50 p-3 text-center text-xs text-amber-700 font-medium border-b border-amber-100">
+        ⚠️ Live price nahi mil paya, niche buttons se direct check karein.
+    </div>
+    {% endif %}
+
     <div class="bg-slate-50 p-8 flex justify-center">
         <img src="{{ product_data.image }}" alt="Product" class="h-56 object-contain transform hover:scale-105 transition duration-300">
     </div>
@@ -47,39 +44,31 @@
     <div class="p-6">
         <div class="mb-4 text-center">
             <h2 class="text-2xl font-bold text-slate-800 line-clamp-2 leading-tight">{{ product_data.title }}</h2>
-            <div class="mt-2 inline-block px-4 py-1 bg-green-100 text-green-700 rounded-full font-bold text-lg">
+            <div class="mt-2 inline-block px-4 py-1 {% if product_data.is_fallback %}bg-slate-100 text-slate-500{% else %}bg-green-100 text-green-700{% endif %} rounded-full font-bold text-lg">
                 {{ product_data.price }}
             </div>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
             <a href="{{ product_data.amazon_link }}" target="_blank"
-               class="flex flex-col items-center justify-center p-3 border-2 border-orange-100 rounded-2xl hover:bg-orange-50 hover:border-orange-200 transition group">
-                <span class="text-xs text-slate-500 font-semibold mb-1 uppercase tracking-wider">Buy on</span>
+               class="flex flex-col items-center justify-center p-3 border-2 border-orange-100 rounded-2xl hover:bg-orange-50 hover:border-orange-200 transition group shadow-sm hover:shadow-md">
+                <span class="text-xs text-slate-400 font-semibold mb-1 uppercase tracking-wider">Buy on</span>
                 <span class="text-orange-600 font-extrabold text-lg">Amazon</span>
             </a>
 
             <a href="{{ product_data.flipkart_link }}" target="_blank"
-               class="flex flex-col items-center justify-center p-3 border-2 border-blue-100 rounded-2xl hover:bg-blue-50 hover:border-blue-200 transition group">
-                <span class="text-xs text-slate-500 font-semibold mb-1 uppercase tracking-wider">Buy on</span>
+               class="flex flex-col items-center justify-center p-3 border-2 border-blue-100 rounded-2xl hover:bg-blue-50 hover:border-blue-200 transition group shadow-sm hover:shadow-md">
+                <span class="text-xs text-slate-400 font-semibold mb-1 uppercase tracking-wider">Buy on</span>
                 <span class="text-blue-600 font-extrabold text-lg">Flipkart</span>
             </a>
         </div>
     </div>
 </div>
 
-{% elif request.method == 'POST' %}
-<div class="max-w-md mx-auto bg-white p-10 rounded-3xl shadow-lg border border-slate-100 text-center">
-    <div class="text-indigo-500 mb-4">
-        <svg class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-    </div>
-    <h2 class="text-xl font-bold text-slate-800 mb-2">Data Nahi Mil Paya</h2>
-    <p class="text-slate-600">
-        Shayad product stock mein nahi hai ya API limit khatam ho gayi hai. Kuch der baad try karein ya dusra product search karein.
-    </p>
+<div class="text-center mt-6">
+    <p class="text-slate-400 text-xs italic">Prices up-to-date nahi ho sakte. Store par click karke confirm karein.</p>
 </div>
+
 {% endif %}
 
 {% endblock %}
