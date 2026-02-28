@@ -7,6 +7,7 @@ import requests
 import time
 
 app = Flask(__name__)
+# Render secret key fix
 app.secret_key = os.environ.get("SECRET_KEY", "supersecretkey_123")
 
 # Database configuration
@@ -30,16 +31,16 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 # ---------------- AFFILIATE CONFIG ----------------
+# Inhe Render Environment Variables mein set karein
 AMAZON_TAG = os.environ.get("AMAZON_TAG", "smartprice-21") 
 FLIPKART_AFFID = os.environ.get("FLIPKART_AFFID", "your_affid")
 
-# ---------------- UPGRADED PRODUCT FUNCTION ----------------
+# ---------------- PRODUCT FUNCTION (API FIX) ----------------
 def get_product_data(product):
     url = "https://real-time-product-search.p.rapidapi.com/search"
     querystring = {"q": product, "country": "in", "language": "en"}
     
-    # Aapka dashboard dikha raha hai ki response slow hai (22s)
-    # Isliye hum timeout 30 seconds rakhenge
+    # Dashboard ke 22s slow response ko handle karne ke liye
     api_key = os.environ.get("RAPIDAPI_KEY", "baa2460488msha5e400b4aafc679p14ae78jsnb144d2abc757").strip()
 
     headers = {
@@ -47,18 +48,19 @@ def get_product_data(product):
         "x-rapidapi-host": "real-time-product-search.p.rapidapi.com"
     }
 
-    # Retry logic: Agar pehli baar mein data na mile (Empty Body)
+    # Retry loop for 2-byte empty responses
     for attempt in range(2):
         try:
+            # Timeout 30 seconds taaki slow API fail na ho
             response = requests.get(url, headers=headers, params=querystring, timeout=30)
             if response.status_code == 200:
                 data = response.json()
-                # 2 Bytes body size fix: Check karein ki real data hai ya nahi
+                # Data check to avoid empty body
                 if data.get('data') and len(data['data']) > 0:
                     item = data['data'][0]
                     raw_url = item.get('product_url', '')
                     
-                    # Affiliate Link Logic
+                    # Affiliate link logic
                     amazon_aff_link = f"{raw_url}&tag={AMAZON_TAG}" if "amazon.in" in raw_url else f"https://www.amazon.in/s?k={product}&tag={AMAZON_TAG}"
                     flipkart_aff_link = f"https://www.flipkart.com/search?q={product}&affid={FLIPKART_AFFID}"
                     
@@ -70,10 +72,9 @@ def get_product_data(product):
                         "flipkart_link": flipkart_aff_link,
                         "is_fallback": False
                     }
-            # Agar data empty hai (2 bytes), thoda ruk kar dubara try karein
-            time.sleep(1) 
+            time.sleep(1) # Wait before retry
         except Exception as e:
-            print(f"Attempt {attempt+1} failed: {e}")
+            print(f"API Error (Attempt {attempt+1}): {e}")
     
     return None
 
@@ -91,11 +92,12 @@ def home():
         product = request.form.get("product")
         if product:
             product_data = get_product_data(product)
+            # Revenue Fallback logic
             if not product_data:
                 product_data = {
                     "title": product.title(),
                     "price": "Check Current Price",
-                    "image": "https://via.placeholder.com/250?text=Check+Offers",
+                    "image": "https://via.placeholder.com/250?text=Price+History",
                     "amazon_link": f"https://www.amazon.in/s?k={product}&tag={AMAZON_TAG}",
                     "flipkart_link": f"https://www.flipkart.com/search?q={product}&affid={FLIPKART_AFFID}",
                     "is_fallback": True
@@ -113,7 +115,6 @@ def register():
         new_user = User(username=username, password=password)
         db.session.add(new_user)
         db.session.commit()
-        flash("Registration successful!")
         return redirect(url_for("login"))
     return render_template("register.html")
 
@@ -141,9 +142,11 @@ def logout():
     logout_user()
     return redirect(url_for("home"))
 
+# ---------------- RENDER PORT FIX ----------------
 with app.app_context():
     db.create_all()
 
 if __name__ == "__main__":
+    # Render scan ke liye host aur port set karna zaroori hai
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
