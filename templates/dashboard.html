@@ -1,1 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
 
+<h2 class="text-xl font-bold mb-4">Admin Dashboard</h2>
+
+<p class="mb-3">Logged in as: {{ current_user.username }}</p>
+
+<h3 class="font-semibold mb-2">Registered Users:</h3>
+<ul class="list-disc ml-6">
+{% for user in users %}
+<li>{{ user.username }}</li>
+{% endfor %}
+</ul>
+
+{% endblock %}
