@@ -28,6 +28,16 @@
     </form>
 </div>
 
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    {% for message in messages %}
+      <div class="max-w-md mx-auto mb-4 p-4 bg-red-100 text-red-700 rounded-xl text-center font-medium">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
 {% if product_data %}
 <div class="max-w-md mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 animate-in slide-in-from-bottom duration-500">
     <div class="bg-slate-50 p-8 flex justify-center">
@@ -56,6 +66,19 @@
             </a>
         </div>
     </div>
+</div>
+
+{% elif request.method == 'POST' %}
+<div class="max-w-md mx-auto bg-white p-10 rounded-3xl shadow-lg border border-slate-100 text-center">
+    <div class="text-indigo-500 mb-4">
+        <svg class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+    </div>
+    <h2 class="text-xl font-bold text-slate-800 mb-2">Data Nahi Mil Paya</h2>
+    <p class="text-slate-600">
+        Shayad product stock mein nahi hai ya API limit khatam ho gayi hai. Kuch der baad try karein ya dusra product search karein.
+    </p>
 </div>
 {% endif %}
 
