@@ -2,7 +2,9 @@ import os
 from flask import Flask, render_template, request, session, flash, redirect, url_for
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "a_very_secret_key_123") # Security ke liye environment variable use karein
+
+# Security Tip: Render Dashboard mein 'SECRET_KEY' naam ka Env Var banayein
+app.secret_key = os.environ.get("SECRET_KEY", "default_fallback_key_123")
 
 # -----------------------
 # Sample Product Data
@@ -59,9 +61,10 @@ def logout():
     return redirect(url_for('index'))
 
 # -----------------------
-# Run App
+# Production Port Binding
 # -----------------------
 if __name__ == "__main__":
-    # Deployment ke liye 0.0.0.0 aur port binding zaroori hai
-    port = int(os.environ.get("PORT", 5000))
+    # Render dynamic port assign karta hai, isliye os.environ.get zaroori hai
+    port = int(os.environ.get("PORT", 10000))
+    # host="0.0.0.0" hona chahiye taaki bahar se traffic aa sake
     app.run(host="0.0.0.0", port=port)
