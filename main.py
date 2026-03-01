@@ -7,10 +7,12 @@ import requests
 from requests.exceptions import RequestException, Timeout
 from datetime import datetime
 
-app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "supersecretkey_123")  # Render pe env var set kar lo
+# Flask app create karte time template_folder explicitly set karo (sabse important fix)
+app = Flask(__name__, template_folder='templates')  # agar templates src/templates mein hai to 'src/templates' daalo
 
-# Database config (SQLite local, Render pe PostgreSQL better hota hai)
+app.secret_key = os.environ.get("SECRET_KEY", "supersecretkey_123")
+
+# Database config
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///database.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
@@ -28,67 +30,56 @@ class User(UserMixin, db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Affiliate tags (env se lo)
+# Affiliate & API keys
 AMAZON_TAG = os.environ.get("AMAZON_TAG", "smartprice-21")
 FLIPKART_AFFID = os.environ.get("FLIPKART_AFFID", "your_affid_here")
-
-# RapidAPI Key
 RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY")
 
-# Context processor for current year (footer ke liye)
+# Current year for footer
 @app.context_processor
 def inject_current_year():
     return dict(current_year=datetime.now().year)
 
 def get_product_data(query):
     if not RAPIDAPI_KEY:
-        print("RAPIDAPI_KEY missing in environment variables!")
+        print("RAPIDAPI_KEY missing!")
         return None
 
-    headers = {
-        "X-RapidAPI-Key": RAPIDAPI_KEY,
-        "X-RapidAPI-Host": ""
-    }
+    headers = {"X-RapidAPI-Key": RAPIDAPI_KEY, "X-RapidAPI-Host": ""}
 
-    # 1. Amazon specific API (better price accuracy)
+    # Amazon API try
     try:
         host = "real-time-amazon-data.p.rapidapi.com"
         url = f"https://{host}/search"
         headers["X-RapidAPI-Host"] = host
-
         params = {"query": query, "country": "IN", "page": "1"}
         response = requests.get(url, headers=headers, params=params, timeout=10)
         response.raise_for_status()
         data = response.json()
-
-        if data.get("status") == "OK" and data.get("data") and len(data["data"]) > 0:
+        if data.get("status") == "OK" and data.get("data"):
             item = data["data"][0]
             price = item.get("product_price_current", {}).get("price", "Check Store")
-            if price and isinstance(price, str):
-                price = price.replace("₹", "").replace(",", "").strip()
             return {
                 "title": item.get("product_title", query.title()),
                 "price": f"₹{price}" if price != "Check Store" else "Check Store",
                 "image": item.get("product_main_image_url") or "https://via.placeholder.com/300",
-                "amazon_link": f"{item.get('product_url')}&tag={AMAZON_TAG}" if item.get('product_url') else f"https://www.amazon.in/s?k={query}&tag={AMAZON_TAG}",
+                "amazon_link": f"{item.get('product_url')}&tag={AMAZON_TAG}" or f"https://www.amazon.in/s?k={query}&tag={AMAZON_TAG}",
                 "flipkart_link": f"https://www.flipkart.com/search?q={query}&affid={FLIPKART_AFFID}",
                 "is_fallback": False
             }
-    except (RequestException, Timeout) as e:
-        print(f"Amazon API error: {e}")
+    except Exception as e:
+        print(f"Amazon API fail: {e}")
 
-    # 2. General product search fallback
+    # General fallback
     try:
         host = "real-time-product-search.p.rapidapi.com"
         url = f"https://{host}/search"
         headers["X-RapidAPI-Host"] = host
-
         params = {"q": query, "country": "in", "limit": "1"}
         response = requests.get(url, headers=headers, params=params, timeout=12)
         response.raise_for_status()
         data = response.json()
-
-        if data.get("status") == "OK" and data.get("data") and len(data["data"]) > 0:
+        if data.get("status") == "OK" and data.get("data"):
             item = data["data"][0]
             return {
                 "title": item.get("product_title", query.title()),
@@ -98,10 +89,10 @@ def get_product_data(query):
                 "flipkart_link": f"https://www.flipkart.com/search?q={query}&affid={FLIPKART_AFFID}",
                 "is_fallback": False
             }
-    except (RequestException, Timeout) as e:
-        print(f"General API error: {e}")
+    except Exception as e:
+        print(f"General API fail: {e}")
 
-    # Final fallback
+    # Ultimate fallback
     return {
         "title": query.title(),
         "price": "Live Price Unavailable",
@@ -119,18 +110,11 @@ def home():
         if product:
             product_data = get_product_data(product)
         else:
-            flash("Product name ya link daalo bhai!", "error")
-
+            flash("Enter product name or link!", "error")
     return render_template("index.html", product_data=product_data)
 
-# Baaki routes (login, register, dashboard, logout) yahan add karna
-# Example placeholder:
-@app.route("/dashboard")
-@login_required
-def dashboard():
-    return render_template("dashboard.html")
+# Add your other routes here...
 
-# Database tables create
 with app.app_context():
     db.create_all()
 
