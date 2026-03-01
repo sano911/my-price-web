@@ -1,36 +1,44 @@
-/* Body & Typography */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #ffffff;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f8f9fa;
     color: #222;
 }
 
-/* Hero Section */
-.hero-section {
-    background: linear-gradient(135deg, #f8f9fa, #ffffff);
-    padding-top: 5rem;
-    padding-bottom: 5rem;
+/* Navbar hover */
+.navbar-nav .nav-link:hover {
+    color: #ffc107 !important;
 }
 
-.hero-section h1 {
-    color: #222;
+/* Product Cards */
+.card img {
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
 }
 
-.hero-section p {
+.card img:hover {
+    transform: scale(1.05);
+}
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.card-text {
     color: #555;
 }
 
-/* Search Input */
-.form-control-lg {
-    border: 2px solid #eaeaea;
+/* Buttons */
+.btn-warning {
+    background-color: #f0ad4e;
+    border: none;
 }
 
-.form-control-lg:focus {
-    box-shadow: none;
-    border-color: #28a745;
+.btn-warning:hover {
+    background-color: #ec971f;
 }
 
-/* Button */
 .btn-success {
     background-color: #28a745;
     border: none;
@@ -40,29 +48,16 @@ body {
     background-color: #218838;
 }
 
-/* Features Cards */
-.card {
-    border-radius: 15px;
-    transition: all 0.3s ease;
+/* Forms */
+form input, form button {
+    border-radius: 5px;
 }
 
-.card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+form button:hover {
+    opacity: 0.9;
 }
 
 /* Footer */
 footer {
-    background-color: #007bff;
-    color: white;
-    padding: 1rem;
-}
-
-footer a {
-    color: #ffc107;
-    text-decoration: none;
-}
-
-footer a:hover {
-    text-decoration: underline;
+    font-size: 0.9rem;
 }
