@@ -1,16 +1,26 @@
+/* Body & Typography */
 body {
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #ffffff;
+    color: #222;
 }
 
+/* Hero Section */
 .hero-section {
     background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    padding-top: 5rem;
+    padding-bottom: 5rem;
 }
 
 .hero-section h1 {
     color: #222;
 }
 
+.hero-section p {
+    color: #555;
+}
+
+/* Search Input */
 .form-control-lg {
     border: 2px solid #eaeaea;
 }
@@ -20,6 +30,7 @@ body {
     border-color: #28a745;
 }
 
+/* Button */
 .btn-success {
     background-color: #28a745;
     border: none;
@@ -29,6 +40,7 @@ body {
     background-color: #218838;
 }
 
+/* Features Cards */
 .card {
     border-radius: 15px;
     transition: all 0.3s ease;
@@ -36,4 +48,21 @@ body {
 
 .card:hover {
     transform: translateY(-8px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+/* Footer */
+footer {
+    background-color: #007bff;
+    color: white;
+    padding: 1rem;
+}
+
+footer a {
+    color: #ffc107;
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
 }
