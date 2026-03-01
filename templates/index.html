@@ -1,59 +1,34 @@
 {% extends "base.html" %}
-{% block title %}Home - MyWebsite{% endblock %}
+{% block title %}Home - MyShop{% endblock %}
 
 {% block content %}
 
-<!-- HERO SECTION -->
-<section class="hero-section text-center py-5">
-    <div class="container">
-        <h1 class="fw-bold display-5 mb-3">Track Product Prices Instantly</h1>
-        <p class="lead text-muted mb-4">
-            Monitor price drops, view history charts, and never overpay again.
-        </p>
+<h1 class="text-center mb-4">Find Products & Buy Instantly</h1>
 
-        <!-- Search Bar -->
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <form method="POST" class="d-flex shadow-sm">
-                    <input type="text" class="form-control form-control-lg rounded-start"
-                           placeholder="Paste product link here..." required>
-                    <button type="submit" class="btn btn-success btn-lg rounded-end">
-                        Track Price
-                    </button>
-                </form>
+<!-- Search Bar -->
+<form method="GET" class="mb-5">
+    <div class="input-group">
+        <input type="text" name="query" class="form-control" placeholder="Search products..." value="{{ query }}">
+        <button class="btn btn-success" type="submit">Search</button>
+    </div>
+</form>
+
+<!-- Product Cards -->
+<div class="row">
+    {% for product in products %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <img src="{{ url_for('static', filename='images/' + product.image) }}" class="card-img-top" alt="{{ product.name }}">
+            <div class="card-body">
+                <h5 class="card-title">{{ product.name }}</h5>
+                <p class="card-text">{{ product.description }}</p>
+                <p class="fw-bold">{{ product.price }}</p>
+                <a href="{{ product.amazon_link }}" class="btn btn-warning btn-sm me-2" target="_blank">Buy on Amazon</a>
+                <a href="{{ product.flipkart_link }}" class="btn btn-success btn-sm" target="_blank">Buy on Flipkart</a>
             </div>
         </div>
     </div>
-</section>
-
-<!-- FEATURES SECTION -->
-<section class="py-5 bg-light">
-    <div class="container text-center">
-        <div class="row">
-
-            <div class="col-md-4 mb-4">
-                <div class="card border-0 shadow-sm p-4">
-                    <h4 class="fw-bold">📊 Price History</h4>
-                    <p class="text-muted">View detailed price trends with interactive charts.</p>
-                </div>
-            </div>
-
-            <div class="col-md-4 mb-4">
-                <div class="card border-0 shadow-sm p-4">
-                    <h4 class="fw-bold">🔔 Price Alerts</h4>
-                    <p class="text-muted">Get notified when the price drops.</p>
-                </div>
-            </div>
-
-            <div class="col-md-4 mb-4">
-                <div class="card border-0 shadow-sm p-4">
-                    <h4 class="fw-bold">⚡ Smart Comparison</h4>
-                    <p class="text-muted">Compare prices across multiple stores instantly.</p>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</section>
+    {% endfor %}
+</div>
 
 {% endblock %}
