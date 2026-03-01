@@ -1,14 +1,15 @@
-import os  # 'i' small kar diya hai
+import os  # Capital 'I' ko small 'i' kar diya hai
 from flask import Flask, render_template, request, session, flash, redirect, url_for
 
 app = Flask(__name__)
 
-# Security: Render dashboard mein SECRET_KEY set karein
-app.secret_key = os.environ.get("SECRET_KEY", "bhai_mehnat_rang_layegi_123")
+# Security: Render dashboard mein 'SECRET_KEY' variable zaroor banayein
+app.secret_key = os.environ.get("SECRET_KEY", "bhai_ka_app_live_ho_gaya_123")
 
 # -----------------------
 # Sample Product Data
 # -----------------------
+# Note: In images ko dikhane ke liye 'static/images/' folder mein files honi chahiye
 products = [
     {
         "name": "iPhone 15 Pro Max",
@@ -56,9 +57,10 @@ def login():
         flash("Invalid credentials")
     return render_template("login.html")
 
-# YE ADD KIYA HAI: Taki BuildError na aaye
+# YE ZAROORI HAI: Taki BuildError: 'register' khatam ho jaye
 @app.route('/register')
 def register():
+    # Agar register.html file hai to wo load hogi, warna registration page dikhega
     return render_template("register.html")
 
 @app.route('/logout')
@@ -71,7 +73,8 @@ def logout():
 # Production Port Binding
 # -----------------------
 if __name__ == "__main__":
-    # Render dynamic port assign karta hai
+    # Render dynamic port variable
     port = int(os.environ.get("PORT", 10000))
-    # host="0.0.0.0" aur debug=False deployment ke liye zaroori hai
+    # host="0.0.0.0" aur debug=False deployment ke liye
     app.run(host="0.0.0.0", port=port, debug=False)
+
