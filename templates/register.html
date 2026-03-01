@@ -1,42 +1,24 @@
 {% extends "base.html" %}
-
-{% block title %}Register - MyWebsite{% endblock %}
+{% block title %}Register - MyShop{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h3 class="card-title mb-4 text-center">Create an Account</h3>
+<h1 class="mb-4 text-center">Register</h1>
 
-                {% with messages = get_flashed_messages() %}
-                  {% if messages %}
-                    <div class="alert alert-warning">
-                      {% for message in messages %}
-                        {{ message }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                {% endwith %}
-
-                <form method="POST" action="{{ url_for('register') }}">
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" required placeholder="Choose a username">
-                    </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email address</label>
-                        <input type="email" class="form-control" id="email" name="email" required placeholder="Enter your email">
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required placeholder="Choose a strong password">
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Register</button>
-                </form>
-                <p class="mt-3 text-center">Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
-            </div>
-        </div>
+<form method="POST" class="mx-auto" style="max-width: 400px;">
+    <div class="mb-3">
+        <label>Username</label>
+        <input type="text" name="username" class="form-control" required>
     </div>
-</div>
+    <div class="mb-3">
+        <label>Email</label>
+        <input type="email" name="email" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Password</label>
+        <input type="password" name="password" class="form-control" required>
+    </div>
+    <button class="btn btn-primary w-100" type="submit">Register</button>
+</form>
+
+<p class="mt-3 text-center">Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
 {% endblock %}
