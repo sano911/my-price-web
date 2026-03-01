@@ -1,16 +1,30 @@
 {% extends "base.html" %}
+{% block title %}Dashboard - Smart Price Finder{% endblock %}
+
 {% block content %}
+<div class="max-w-7xl mx-auto mt-12 px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">Welcome back, {{ current_user.username }}</h1>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">Track your saved products and price alerts here</p>
+        </div>
+        <a href="/" class="mt-4 md:mt-0 inline-flex px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition shadow-glow">
+            Search New Product
+        </a>
+    </div>
 
-<h2 class="text-xl font-bold mb-4">Admin Dashboard</h2>
+    <!-- Placeholder for tracked products / history -->
+    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-soft p-10 border border-slate-200 dark:border-slate-700 text-center">
+        <svg class="mx-auto h-16 w-16 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h3 class="mt-6 text-xl font-medium text-slate-900 dark:text-white">No tracked products yet</h3>
+        <p class="mt-2 text-slate-600 dark:text-slate-300">Start by searching and saving products you like.</p>
+        <a href="/" class="mt-6 inline-flex px-8 py-4 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition shadow-glow">
+            Search Products Now
+        </a>
+    </div>
 
-<p class="mb-3">Logged in as: {{ current_user.username }}</p>
-
-<h3 class="font-semibold mb-2">Registered Users:</h3>
-
-<ul class="list-disc ml-6">
-{% for user in users %}
-<li>{{ user.username }}</li>
-{% endfor %}
-</ul>
-
+    <!-- Future sections: Price alerts, Recent searches, etc. -->
+</div>
 {% endblock %}
