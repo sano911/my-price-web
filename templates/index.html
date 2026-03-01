@@ -1,44 +1,65 @@
-<!-- templates/index.html -->
 {% extends "base.html" %}
-
 {% block title %}Home - MyWebsite{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="p-5 mb-4 bg-light rounded-3 text-center shadow-sm">
-    <div class="container py-5">
-        <h1 class="display-4 fw-bold">Welcome to MyWebsite</h1>
-        <p class="lead mb-4">A modern, responsive website built with Flask and Bootstrap. Explore, login, or register to get started!</p>
-        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg me-2">Get Started</a>
-        <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg">Login</a>
-    </div>
-</div>
 
-<!-- Features Section -->
-<div class="row text-center">
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Secure Login</h5>
-                <p class="card-text">Your account is protected with strong authentication and session management.</p>
+<!-- HERO SECTION -->
+<section class="hero-section text-center py-5">
+    <div class="container">
+        <h1 class="fw-bold display-5 mb-3">Track Product Prices Instantly</h1>
+        <p class="lead text-muted mb-4">
+            Monitor price drops, view history charts, and never overpay again.
+        </p>
+
+        <!-- Search Bar -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <form action="#" method="POST" class="d-flex shadow-sm">
+                    <input type="text" class="form-control form-control-lg rounded-start"
+                        placeholder="Paste product link here...">
+                    <button class="btn btn-success btn-lg rounded-end">
+                        Track Price
+                    </button>
+                </form>
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Easy Registration</h5>
-                <p class="card-text">Sign up quickly with a simple and intuitive registration form.</p>
+</section>
+
+<!-- FEATURES -->
+<section class="py-5 bg-light">
+    <div class="container text-center">
+        <div class="row">
+
+            <div class="col-md-4 mb-4">
+                <div class="card border-0 shadow-sm p-4">
+                    <h4 class="fw-bold">📊 Price History</h4>
+                    <p class="text-muted">
+                        View detailed price trends with interactive charts.
+                    </p>
+                </div>
             </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card border-0 shadow-sm p-4">
+                    <h4 class="fw-bold">🔔 Price Alerts</h4>
+                    <p class="text-muted">
+                        Get notified when the price drops.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card border-0 shadow-sm p-4">
+                    <h4 class="fw-bold">⚡ Smart Comparison</h4>
+                    <p class="text-muted">
+                        Compare prices across multiple stores instantly.
+                    </p>
+                </div>
+            </div>
+
         </div>
     </div>
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Interactive Dashboard</h5>
-                <p class="card-text">View personalized content, manage your profile, and access exclusive features.</p>
-            </div>
-        </div>
-    </div>
-</div>
+</section>
+
 {% endblock %}
