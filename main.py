@@ -1,79 +1,81 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key_here"  # production me strong key use karo
+app.secret_key = "YOUR_SECRET_KEY"
 
-# In-memory DB (replace with real DB in production)
-users_db = {}
-
-# Pass current year to templates
-@app.context_processor
-def inject_year():
-    return {'current_year': datetime.now().year}
+# Sample product data (replace with DB or API later)
+products = [
+    {
+        "name": "iPhone 15 Pro Max",
+        "price": "₹1,49,900",
+        "image": "iphone15.jpg",
+        "description": "Latest Apple iPhone with amazing camera.",
+        "amazon_link": "https://www.amazon.in/dp/B0XXXXXXX",
+        "flipkart_link": "https://www.flipkart.com/item?pid=XXXXX"
+    },
+    {
+        "name": "Samsung Galaxy S23 Ultra",
+        "price": "₹1,09,999",
+        "image": "galaxy_s23.jpg",
+        "description": "High-end Samsung phone with 200MP camera.",
+        "amazon_link": "https://www.amazon.in/dp/B0YYYYYYY",
+        "flipkart_link": "https://www.flipkart.com/item?pid=YYYYY"
+    },
+    {
+        "name": "OnePlus 11",
+        "price": "₹49,999",
+        "image": "oneplus11.jpg",
+        "description": "Fast performance and smooth display.",
+        "amazon_link": "https://www.amazon.in/dp/B0ZZZZZZ",
+        "flipkart_link": "https://www.flipkart.com/item?pid=ZZZZZ"
+    }
+]
 
 # -------------------
-# Routes
+# ROUTES
 # -------------------
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # Homepage: show product cards + search bar
+    query = request.args.get('query', '').lower()
+    filtered_products = products
+    if query:
+        filtered_products = [p for p in products if query in p['name'].lower()]
+    return render_template("index.html", products=filtered_products, query=query)
 
-@app.route('/register', methods=['GET','POST'])
-def register():
-    if request.method == 'POST':
-        username = request.form['username'].strip()
-        email = request.form['email'].strip().lower()
-        password = request.form['password']
-
-        if email in users_db:
-            flash("Email already registered!")
-            return redirect(url_for('register'))
-
-        users_db[email] = {'username': username, 'password': generate_password_hash(password)}
-        flash("Registration successful! Please login.")
-        return redirect(url_for('login'))
-    return render_template('register.html')
+@app.route('/dashboard')
+def dashboard():
+    # Optional: show most viewed / top products
+    return render_template("dashboard.html", products=products)
 
 @app.route('/login', methods=['GET','POST'])
 def login():
     if request.method == 'POST':
-        email = request.form['email'].strip().lower()
+        email = request.form['email'].lower()
         password = request.form['password']
-
-        user = users_db.get(email)
-        if user and check_password_hash(user['password'], password):
-            session['username'] = user['username']
-            session['email'] = email
-            flash("Login successful!")
+        # Temporary in-memory login
+        if email == "admin@example.com" and password == "admin":
+            session['username'] = "Admin"
+            flash("Login successful")
             return redirect(url_for('dashboard'))
         else:
-            flash("Invalid email or password!")
+            flash("Invalid credentials")
             return redirect(url_for('login'))
-    return render_template('login.html')
+    return render_template("login.html")
 
-@app.route('/dashboard')
-def dashboard():
-    if 'username' not in session:
-        flash("Please login to access dashboard.")
+@app.route('/register', methods=['GET','POST'])
+def register():
+    if request.method == 'POST':
+        flash("Registration feature coming soon")
         return redirect(url_for('login'))
-
-    total_visits = 123
-    profile_completion = 85
-    unread_messages = 5
-    return render_template('dashboard.html',
-                           total_visits=total_visits,
-                           profile_completion=profile_completion,
-                           unread_messages=unread_messages)
+    return render_template("register.html")
 
 @app.route('/logout')
 def logout():
     session.clear()
-    flash("You have been logged out.")
+    flash("Logged out successfully")
     return redirect(url_for('index'))
 
-# For local development only
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
