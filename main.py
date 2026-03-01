@@ -1,11 +1,15 @@
-import os  # 'i' small rakha hai taaki crash na ho
+import os
 from flask import Flask, render_template, request, session, flash, redirect, url_for
 
 app = Flask(__name__)
-# Render Dashboard mein 'SECRET_KEY' zaroor set karein
-app.secret_key = os.environ.get("SECRET_KEY", "bhai_ka_shop_2026_universal")
+# Render Dashboard se SECRET_KEY lega, nahi toh default use karega
+app.secret_key = os.environ.get("SECRET_KEY", "bhai_ka_final_fix_2026")
 
-# Featured Products (Jo homepage par hamesha dikhenge)
+# --- Temporary Database (Isme naye users save honge) ---
+# Format: {"email": "password"}
+users = {"admin@example.com": "admin"} 
+
+# --- Featured Products (Homepage ke liye) ---
 featured_products = [
     {
         "name": "iPhone 15 Pro Max",
@@ -19,30 +23,30 @@ featured_products = [
         "name": "Samsung Galaxy S23 Ultra",
         "price": "₹1,09,999",
         "image": "galaxy_s23.jpg",
-        "description": "Powerful multitasking with S-Pen support.",
+        "description": "High-end Samsung phone with S-Pen.",
         "amazon_link": "https://www.amazon.in/s?k=samsung+s23+ultra",
         "flipkart_link": "https://www.flipkart.com/search?q=samsung+s23+ultra"
     }
 ]
 
+# -----------------------
+# HOME & SEARCH ROUTE
+# -----------------------
 @app.route('/')
 def index():
-    # User ne jo search kiya wo query yahan aayegi
     query = request.args.get('query', '').strip()
     
     if query:
         # 1. Pehle featured list mein check karo
         results = [p for p in featured_products if query.lower() in p['name'].lower()]
         
-        # 2. AGAR LIST MEIN NAHI MILA -> Toh on-the-spot naya product card banao
+        # 2. Agar list mein nahi hai -> Universal Redirect Card banao
         if not results:
-            # Ye card har us product ke liye banega jo list mein nahi hai
             dynamic_product = {
-                "name": query.title(), # User ki query ka pehla letter capital karega
-                "price": "Check Live Price",
-                "image": "default.jpg", # Placeholder image
-                "description": f"Find the best deals for '{query}' on India's top stores.",
-                # Space ko '+' se replace kiya taaki URL sahi se kaam kare
+                "name": query.title(),
+                "price": "Check Live Store",
+                "image": "default.jpg", 
+                "description": f"Best deals for '{query}' found on top stores.",
                 "amazon_link": f"https://www.amazon.in/s?k={query.replace(' ', '+')}",
                 "flipkart_link": f"https://www.flipkart.com/search?q={query.replace(' ', '+')}"
             }
@@ -52,23 +56,60 @@ def index():
 
     return render_template("index.html", products=results, query=query)
 
-# --- Auth Routes (Same as before) ---
+# -----------------------
+# LOGIN ROUTE (FIXED)
+# -----------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        session['username'] = "Admin"
-        return redirect(url_for('index'))
+        email = request.form.get('email', '').lower().strip()
+        password = request.form.get('password')
+        
+        # Check database
+        if email in users and users[email] == password:
+            session['username'] = email
+            flash("Login Successful! Welcome back.")
+            return redirect(url_for('index'))
+        else:
+            flash("Galti! Email ya Password galat hai.")
+            
     return render_template("login.html")
 
+# -----------------------
+# REGISTER ROUTE (FIXED)
+# -----------------------
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        email = request.form.get('email', '').lower().strip()
+        password = request.form.get('password')
+        
+        if not email or not password:
+            flash("Please fill all fields!")
+        elif email in users:
+            flash("Email pehle se register hai. Login karein.")
+        else:
+            # Naya user save ho raha hai
+            users[email] = password
+            flash("Registration Successful! Ab Login karein.")
+            return redirect(url_for('login'))
+            
+    return render_template("register.html")
+
+# -----------------------
+# LOGOUT ROUTE
+# -----------------------
 @app.route('/logout')
 def logout():
     session.clear()
+    flash("Logged out successfully.")
     return redirect(url_for('index'))
 
-# --- Render Production Port Binding ---
+# -----------------------
+# RENDER DEPLOYMENT SETTINGS
+# -----------------------
 if __name__ == "__main__":
-    # Render dynamic port environment variable
+    # Render dynamic port binding
     port = int(os.environ.get("PORT", 10000))
-    # host 0.0.0.0 is mandatory for cloud deployment
+    # host 0.0.0.0 is mandatory for Render/Cloud
     app.run(host="0.0.0.0", port=port, debug=False)
-
