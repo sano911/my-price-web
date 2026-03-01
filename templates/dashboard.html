@@ -1,45 +1,24 @@
 {% extends "base.html" %}
-
-{% block title %}Dashboard - MyWebsite{% endblock %}
+{% block title %}Dashboard - MyShop{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="card shadow-sm mb-4">
-            <div class="card-body text-center">
-                <h2 class="card-title">Welcome, {{ session['username'] }}!</h2>
-                <p class="lead">This is your dashboard where you can view your profile and manage your account.</p>
-                <a href="{{ url_for('logout') }}" class="btn btn-danger mt-3">Logout</a>
-            </div>
-        </div>
-    </div>
-</div>
+<h1 class="mb-4">Dashboard</h1>
+<p>Welcome, {{ session.get('username', 'Guest') }}! Check top products below:</p>
 
-<!-- Example Stats Section -->
-<div class="row text-center">
+<div class="row">
+    {% for product in products %}
     <div class="col-md-4 mb-4">
         <div class="card h-100 shadow-sm">
+            <img src="{{ url_for('static', filename='images/' + product.image) }}" class="card-img-top" alt="{{ product.name }}">
             <div class="card-body">
-                <h5 class="card-title">Total Visits</h5>
-                <p class="card-text">{{ total_visits }}</p>
+                <h5 class="card-title">{{ product.name }}</h5>
+                <p class="card-text">{{ product.description }}</p>
+                <p class="fw-bold">{{ product.price }}</p>
+                <a href="{{ product.amazon_link }}" class="btn btn-warning btn-sm me-2" target="_blank">Buy on Amazon</a>
+                <a href="{{ product.flipkart_link }}" class="btn btn-success btn-sm" target="_blank">Buy on Flipkart</a>
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Profile Completion</h5>
-                <p class="card-text">{{ profile_completion }}%</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Messages</h5>
-                <p class="card-text">{{ unread_messages }}</p>
-            </div>
-        </div>
-    </div>
+    {% endfor %}
 </div>
 {% endblock %}
