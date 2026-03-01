@@ -1,75 +1,44 @@
+<!-- templates/index.html -->
 {% extends "base.html" %}
-{% block title %}Smart Price Finder - Real-time Price Tracker{% endblock %}
+
+{% block title %}Home - MyWebsite{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto mt-16 px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-16">
-        <h1 class="text-4xl md:text-6xl font-bold text-slate-900 dark:text-white tracking-tight">
-            Find the Best Price <span class="text-indigo-600">Instantly</span>
-        </h1>
-        <p class="mt-6 text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
-            Compare real-time prices from Amazon & Flipkart. Track price history and never overpay again.
-        </p>
-    </div>
-
-    <div class="max-w-3xl mx-auto">
-        <form method="POST" class="relative group">
-            <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-                <svg class="h-7 w-7 text-slate-400 group-focus-within:text-indigo-500 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-            </div>
-            <input type="text" name="product" required
-                class="w-full pl-16 pr-48 py-6 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-2xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-500/30 focus:border-indigo-500 transition shadow-soft text-lg"
-                placeholder="Search product name or paste Amazon/Flipkart link...">
-
-            <button type="submit"
-                class="absolute right-3 top-3 bottom-3 px-10 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 active:scale-95 transition shadow-glow">
-                Search
-            </button>
-        </form>
+<!-- Hero Section -->
+<div class="p-5 mb-4 bg-light rounded-3 text-center shadow-sm">
+    <div class="container py-5">
+        <h1 class="display-4 fw-bold">Welcome to MyWebsite</h1>
+        <p class="lead mb-4">A modern, responsive website built with Flask and Bootstrap. Explore, login, or register to get started!</p>
+        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg me-2">Get Started</a>
+        <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg">Login</a>
     </div>
 </div>
 
-<!-- Results Section -->
-{% if product_data %}
-<div class="max-w-5xl mx-auto mt-20 px-4 sm:px-6 lg:px-8">
-    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-soft overflow-hidden border border-slate-200 dark:border-slate-700">
-        {% if product_data.is_fallback %}
-        <div class="bg-amber-50 dark:bg-amber-900/30 p-4 text-center text-sm font-medium text-amber-800 dark:text-amber-200 border-b border-amber-200 dark:border-amber-800">
-            Live price data unavailable — showing affiliate search links
-        </div>
-        {% endif %}
-
-        <div class="p-10 md:p-12 grid md:grid-cols-2 gap-12">
-            <div class="flex justify-center">
-                <img src="{{ product_data.image }}" alt="{{ product_data.title }}" class="max-h-80 object-contain rounded-2xl shadow-soft transition-transform hover:scale-105 duration-500">
+<!-- Features Section -->
+<div class="row text-center">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Secure Login</h5>
+                <p class="card-text">Your account is protected with strong authentication and session management.</p>
             </div>
-
-            <div class="flex flex-col justify-center">
-                <h2 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-6 line-clamp-2">{{ product_data.title }}</h2>
-                
-                <div class="mb-10">
-                    <span class="text-sm uppercase font-semibold text-slate-500 dark:text-slate-400 block mb-2">Best Current Price</span>
-                    <div class="inline-block px-10 py-4 text-4xl md:text-5xl font-black {% if product_data.is_fallback %}text-slate-500 dark:text-slate-400{% else %}text-green-600 dark:text-green-400{% endif %}">
-                        {{ product_data.price }}
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-6">
-                    <a href="{{ product_data.amazon_link }}" target="_blank" class="flex flex-col items-center p-6 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 rounded-2xl hover:bg-orange-100 dark:hover:bg-orange-900/30 transition text-center">
-                        <span class="text-xs uppercase font-bold text-orange-600 dark:text-orange-400 mb-2">Buy on</span>
-                        <span class="text-2xl font-bold text-orange-700 dark:text-orange-300">Amazon</span>
-                    </a>
-
-                    <a href="{{ product_data.flipkart_link }}" target="_blank" class="flex flex-col items-center p-6 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-2xl hover:bg-blue-100 dark:hover:bg-blue-900/30 transition text-center">
-                        <span class="text-xs uppercase font-bold text-blue-600 dark:text-blue-400 mb-2">Buy on</span>
-                        <span class="text-2xl font-bold text-blue-700 dark:text-blue-300">Flipkart</span>
-                    </a>
-                </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Easy Registration</h5>
+                <p class="card-text">Sign up quickly with a simple and intuitive registration form.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Interactive Dashboard</h5>
+                <p class="card-text">View personalized content, manage your profile, and access exclusive features.</p>
             </div>
         </div>
     </div>
 </div>
-{% endif %}
 {% endblock %}
