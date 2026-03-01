@@ -4,22 +4,22 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import requests
-import time
+from requests.exceptions import RequestException
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "supersecretkey_123")
+app.secret_key = os.environ.get("SECRET_KEY", "supersecretkey_123")  # Render pe env var set karo
 
-# Database setup
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+# Database setup (SQLite for simplicity, production mein PostgreSQL use karo)
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///database.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = "login"
+login_manager.login_view = "login"  # Agar login route hai to
 
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True) 
+    id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
 
@@ -27,91 +27,124 @@ class User(UserMixin, db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# --- AFFILIATE CONFIG ---
-AMAZON_TAG = os.environ.get("AMAZON_TAG", "smartprice-21") 
-FLIPKART_AFFID = os.environ.get("FLIPKART_AFFID", "your_affid")
+# Affiliate tags from env (Render dashboard mein add karo)
+AMAZON_TAG = os.environ.get("AMAZON_TAG", "smartprice-21")
+FLIPKART_AFFID = os.environ.get("FLIPKART_AFFID", "your_affid_here")
 
-# --- SMART API LOGIC ---
-def get_product_data(product):
-    api_key = os.environ.get("RAPIDAPI_KEY", "baa2460488msha5e400b4aafc679p14ae78jsnb144d2abc757").strip()
-    
-    # PEHLA RASTA: Amazon Real-Time API (Fasrt & Accurate)
-    # Note: Apne naye Amazon API ka host yahan check karke badlein agar alag hai
-    amazon_url = "https://amazon-real-time-product-search.p.rapidapi.com/search" 
-    headers = {
-        "x-rapidapi-key": api_key,
-        "x-rapidapi-host": "amazon-real-time-product-search.p.rapidapi.com"
-    }
-    
+# RapidAPI Key (Render env mein set karo - sensitive hai!)
+RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY")
+
+# Headers for all API calls
+HEADERS = {
+    "X-RapidAPI-Key": RAPIDAPI_KEY,
+    "X-RapidAPI-Host": ""  # endpoint ke hisaab se update hoga
+}
+
+def get_product_data(query):
+    if not RAPIDAPI_KEY:
+        print("Warning: RAPIDAPI_KEY not set in environment variables!")
+        return None
+
+    # Option 1: Real-Time Amazon Data API (best for Amazon prices)
     try:
-        # Amazon API ko 15s ka time dein
-        res = requests.get(amazon_url, headers=headers, params={"q": product, "country": "IN"}, timeout=15)
-        if res.status_code == 200:
-            data = res.json()
-            if data.get('data') and len(data['data']) > 0:
-                item = data['data'][0]
-                return {
-                    "title": item.get('product_title', product.title()),
-                    "price": item.get('product_price') or "Check Store",
-                    "image": item.get('product_photo', "https://via.placeholder.com/250"),
-                    "amazon_link": f"{item.get('product_url')}&tag={AMAZON_TAG}",
-                    "flipkart_link": f"https://www.flipkart.com/search?q={product}&affid={FLIPKART_AFFID}",
-                    "is_fallback": False
-                }
-    except Exception as e:
-        print(f"Amazon API Error: {e}")
+        amazon_host = "real-time-amazon-data.p.rapidapi.com"
+        amazon_url = f"https://{amazon_host}/search"
+        HEADERS["X-RapidAPI-Host"] = amazon_host
 
-    # DUSRA RASTA: Real-Time Product Search (Pichli Wali API)
-    # Agar Amazon API fail ho jaye, toh ise call karein
-    fallback_url = "https://real-time-product-search.p.rapidapi.com/search"
-    headers_fb = {
-        "x-rapidapi-key": api_key,
-        "x-rapidapi-host": "real-time-product-search.p.rapidapi.com"
-    }
-    
+        params = {
+            "query": query,
+            "country": "IN",
+            "sort_by": "RELEVANCE",  # ya "PRICE_LOW_TO_HIGH" etc.
+            "page": "1"
+        }
+
+        response = requests.get(amazon_url, headers=HEADERS, params=params, timeout=12)
+        response.raise_for_status()
+        data = response.json()
+
+        if data.get("status") == "OK" and data.get("data") and len(data["data"]) > 0:
+            item = data["data"][0]
+            price_str = item.get("product_price_current", {}).get("price", "Check Store")
+            if price_str and isinstance(price_str, str):
+                price_str = price_str.replace("₹", "").replace(",", "").strip()
+            return {
+                "title": item.get("product_title", query.title()),
+                "price": f"₹{price_str}" if price_str != "Check Store" else "Check Store",
+                "image": item.get("product_main_image_url") or item.get("product_photos", ["https://via.placeholder.com/300"])[0],
+                "amazon_link": f"{item.get('product_url')}&tag={AMAZON_TAG}" if item.get('product_url') else f"https://www.amazon.in/s?k={query}&tag={AMAZON_TAG}",
+                "flipkart_link": f"https://www.flipkart.com/search?q={query}&affid={FLIPKART_AFFID}",
+                "source": "Amazon API",
+                "is_fallback": False
+            }
+    except RequestException as e:
+        print(f"Amazon API failed: {e}")
+
+    # Option 2: General Real-Time Product Search (Google Shopping based - covers Flipkart etc.)
     try:
-        res_fb = requests.get(fallback_url, headers=headers_fb, params={"q": product, "country": "in"}, timeout=25)
-        if res_fb.status_code == 200:
-            data_fb = res_fb.json()
-            if data_fb.get('data') and len(data_fb['data']) > 0:
-                item = data_fb['data'][0]
-                return {
-                    "title": item.get('product_title', product.title()),
-                    "price": item.get('product_price') or "Check Store",
-                    "image": item.get('product_photos', ["https://via.placeholder.com/250"])[0],
-                    "amazon_link": f"https://www.amazon.in/s?k={product}&tag={AMAZON_TAG}",
-                    "flipkart_link": f"https://www.flipkart.com/search?q={product}&affid={FLIPKART_AFFID}",
-                    "is_fallback": False
-                }
-    except Exception as e:
-        print(f"Fallback API Error: {e}")
+        general_host = "real-time-product-search.p.rapidapi.com"
+        general_url = f"https://{general_host}/search"
+        HEADERS["X-RapidAPI-Host"] = general_host
 
-    return None
+        params = {
+            "q": query,
+            "country": "in",
+            "limit": "1"  # sirf best match
+        }
+
+        response = requests.get(general_url, headers=HEADERS, params=params, timeout=15)
+        response.raise_for_status()
+        data = response.json()
+
+        if data.get("status") == "OK" and data.get("data") and len(data["data"]) > 0:
+            item = data["data"][0]
+            price = item.get("product_price") or "Check Store"
+            return {
+                "title": item.get("product_title", query.title()),
+                "price": price,
+                "image": item.get("product_photos", ["https://via.placeholder.com/300"])[0] if item.get("product_photos") else "https://via.placeholder.com/300",
+                "amazon_link": f"https://www.amazon.in/s?k={query}&tag={AMAZON_TAG}",
+                "flipkart_link": f"https://www.flipkart.com/search?q={query}&affid={FLIPKART_AFFID}",
+                "source": "General Product Search",
+                "is_fallback": False
+            }
+    except RequestException as e:
+        print(f"General API failed: {e}")
+
+    # Final fallback: Just affiliate links
+    return {
+        "title": query.title(),
+        "price": "Live Price Unavailable",
+        "image": "https://via.placeholder.com/300?text=No+Image+Found",
+        "amazon_link": f"https://www.amazon.in/s?k={query}&tag={AMAZON_TAG}",
+        "flipkart_link": f"https://www.flipkart.com/search?q={query}&affid={FLIPKART_AFFID}",
+        "source": "Fallback",
+        "is_fallback": True
+    }
 
 @app.route("/", methods=["GET", "POST"])
 def home():
     product_data = None
     if request.method == "POST":
-        product = request.form.get("product")
+        product = request.form.get("product", "").strip()
         if product:
             product_data = get_product_data(product)
-            # TEESRA RASTA: Dono API fail hone par Affiliate Link dikhao
-            if not product_data:
-                product_data = {
-                    "title": product.title(),
-                    "price": "Live Price Unavailable",
-                    "image": "https://via.placeholder.com/250?text=Search+Results",
-                    "amazon_link": f"https://www.amazon.in/s?k={product}&tag={AMAZON_TAG}",
-                    "flipkart_link": f"https://www.flipkart.com/search?q={product}&affid={FLIPKART_AFFID}",
-                    "is_fallback": True
-                }
+        else:
+            flash("Please enter a product name!", "error")
+
     return render_template("index.html", product_data=product_data)
 
-# ... (baaki routes register/login purane hi rakhein) ...
+# Add your other routes here (login, register, dashboard, logout etc.)
+# Example placeholder:
+@app.route("/dashboard")
+@login_required
+def dashboard():
+    return render_template("dashboard.html")
 
+# Create DB tables
 with app.app_context():
     db.create_all()
 
+# For local testing
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT", 5000))  # Render uses $PORT, local 5000
+    app.run(host="0.0.0.0", port=port, debug=True)
