@@ -5,14 +5,19 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = "your_secret_key_here"  # Change this to a strong secret key
 
-# In-memory "database" for demonstration (replace with real DB like SQLite/MySQL)
+# In-memory "database" (replace with real DB for production)
 users_db = {}
 
+# Pass current year to all templates
 @app.context_processor
 def inject_year():
     return {'current_year': datetime.now().year}
 
-# Home Page
+# -------------------
+# Routes
+# -------------------
+
+# Home Page (open to everyone)
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -55,7 +60,7 @@ def login():
 
     return render_template('login.html')
 
-# Dashboard Page
+# Dashboard (only logged-in users)
 @app.route('/dashboard')
 def dashboard():
     if 'username' not in session:
@@ -81,6 +86,8 @@ def logout():
     flash("You have been logged out.")
     return redirect(url_for('index'))
 
-# Run the app
+# -------------------
+# Run the App
+# -------------------
 if __name__ == '__main__':
     app.run(debug=True)
