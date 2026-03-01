@@ -3,12 +3,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key_here"  # Change this to a strong secret key
+app.secret_key = "your_secret_key_here"  # production me strong key use karo
 
-# In-memory "database" (replace with real DB for production)
+# In-memory DB (replace with real DB in production)
 users_db = {}
 
-# Pass current year to all templates
+# Pass current year to templates
 @app.context_processor
 def inject_year():
     return {'current_year': datetime.now().year}
@@ -17,13 +17,11 @@ def inject_year():
 # Routes
 # -------------------
 
-# Home Page (open to everyone)
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Register Page
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/register', methods=['GET','POST'])
 def register():
     if request.method == 'POST':
         username = request.form['username'].strip()
@@ -34,15 +32,12 @@ def register():
             flash("Email already registered!")
             return redirect(url_for('register'))
 
-        hashed_password = generate_password_hash(password)
-        users_db[email] = {'username': username, 'password': hashed_password}
+        users_db[email] = {'username': username, 'password': generate_password_hash(password)}
         flash("Registration successful! Please login.")
         return redirect(url_for('login'))
-
     return render_template('register.html')
 
-# Login Page
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET','POST'])
 def login():
     if request.method == 'POST':
         email = request.form['email'].strip().lower()
@@ -57,37 +52,28 @@ def login():
         else:
             flash("Invalid email or password!")
             return redirect(url_for('login'))
-
     return render_template('login.html')
 
-# Dashboard (only logged-in users)
 @app.route('/dashboard')
 def dashboard():
     if 'username' not in session:
         flash("Please login to access dashboard.")
         return redirect(url_for('login'))
 
-    # Example dynamic data
     total_visits = 123
     profile_completion = 85
     unread_messages = 5
+    return render_template('dashboard.html',
+                           total_visits=total_visits,
+                           profile_completion=profile_completion,
+                           unread_messages=unread_messages)
 
-    return render_template(
-        'dashboard.html',
-        total_visits=total_visits,
-        profile_completion=profile_completion,
-        unread_messages=unread_messages
-    )
-
-# Logout
 @app.route('/logout')
 def logout():
     session.clear()
     flash("You have been logged out.")
     return redirect(url_for('index'))
 
-# -------------------
-# Run the App
-# -------------------
+# For local development only
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
