@@ -1,9 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+import os
+from flask import Flask, render_template, request, session, flash, redirect, url_for
 
 app = Flask(__name__)
-app.secret_key = "YOUR_SECRET_KEY"
+app.secret_key = "YOUR_SECRET_KEY"  # Change this to a secure key in production
 
-# Sample product data (replace with DB or API later)
+# -----------------------
+# Sample Product Data
+# -----------------------
+# Replace with real affiliate products / DB later
 products = [
     {
         "name": "iPhone 15 Pro Max",
@@ -31,30 +35,32 @@ products = [
     }
 ]
 
-# -------------------
-# ROUTES
-# -------------------
+# -----------------------
+# Routes
+# -----------------------
 
 @app.route('/')
 def index():
-    # Homepage: show product cards + search bar
+    # Homepage with optional search
     query = request.args.get('query', '').lower()
     filtered_products = products
     if query:
         filtered_products = [p for p in products if query in p['name'].lower()]
     return render_template("index.html", products=filtered_products, query=query)
 
+
 @app.route('/dashboard')
 def dashboard():
-    # Optional: show most viewed / top products
+    # Optional dashboard for logged-in users
     return render_template("dashboard.html", products=products)
 
-@app.route('/login', methods=['GET','POST'])
+
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form['email'].lower()
         password = request.form['password']
-        # Temporary in-memory login
+        # Temporary login (replace with DB in future)
         if email == "admin@example.com" and password == "admin":
             session['username'] = "Admin"
             flash("Login successful")
@@ -64,12 +70,14 @@ def login():
             return redirect(url_for('login'))
     return render_template("login.html")
 
-@app.route('/register', methods=['GET','POST'])
+
+@app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         flash("Registration feature coming soon")
         return redirect(url_for('login'))
     return render_template("register.html")
+
 
 @app.route('/logout')
 def logout():
@@ -77,5 +85,11 @@ def logout():
     flash("Logged out successfully")
     return redirect(url_for('index'))
 
+
+# -----------------------
+# Run App
+# -----------------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    # Dynamic port detection for local + platform deployment
+    port = int(os.environ.get("PORT", 5000))  # Use platform PORT or default 5000
+    app.run(host="0.0.0.0", port=port)
