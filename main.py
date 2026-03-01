@@ -1,10 +1,10 @@
-import os
+import os  # 'i' small kar diya hai
 from flask import Flask, render_template, request, session, flash, redirect, url_for
 
 app = Flask(__name__)
 
-# Security Tip: Render Dashboard mein 'SECRET_KEY' naam ka Env Var banayein
-app.secret_key = os.environ.get("SECRET_KEY", "default_fallback_key_123")
+# Security: Render dashboard mein SECRET_KEY set karein
+app.secret_key = os.environ.get("SECRET_KEY", "bhai_mehnat_rang_layegi_123")
 
 # -----------------------
 # Sample Product Data
@@ -40,6 +40,8 @@ def index():
 
 @app.route('/dashboard')
 def dashboard():
+    if not session.get('username'):
+        return redirect(url_for('login'))
     return render_template("dashboard.html", products=products)
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -54,6 +56,11 @@ def login():
         flash("Invalid credentials")
     return render_template("login.html")
 
+# YE ADD KIYA HAI: Taki BuildError na aaye
+@app.route('/register')
+def register():
+    return render_template("register.html")
+
 @app.route('/logout')
 def logout():
     session.clear()
@@ -64,7 +71,7 @@ def logout():
 # Production Port Binding
 # -----------------------
 if __name__ == "__main__":
-    # Render dynamic port assign karta hai, isliye os.environ.get zaroori hai
+    # Render dynamic port assign karta hai
     port = int(os.environ.get("PORT", 10000))
-    # host="0.0.0.0" hona chahiye taaki bahar se traffic aa sake
-    app.run(host="0.0.0.0", port=port)
+    # host="0.0.0.0" aur debug=False deployment ke liye zaroori hai
+    app.run(host="0.0.0.0", port=port, debug=False)
